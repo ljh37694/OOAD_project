@@ -1,7 +1,7 @@
 # 프로젝트 요구사항 정의서 (Requirements Specification)
 
 ## 1. 프로젝트 개요
-- **프로젝트 명**: Moon Loop (문 루프)
+- **프로젝트 명**: SMA(Subscription Management Application)
 - **한 줄 정의**: 잊기 쉬운 월정액 구독 서비스와 고정 지출을 시각화하고 관리하는 지능형 가계부 서비스.
 - **주요 목표**: 
   - 구독 서비스의 결제 주기 시각화 (Loop Concept).
