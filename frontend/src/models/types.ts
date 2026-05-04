@@ -1,14 +1,23 @@
 export interface SubscriptionTemplate {
   templateName: string;
   price: number;
-  category: string;
+  category?: string;
+  categories?: string[];
   pageUrl: string;
   calender: string;
+  icon?: string;
 }
 
 export interface Subscription {
   id?: string;
   template?: SubscriptionTemplate;
+  name?: string;
+  icon?: string;
+  category?: string;
+  categories?: string[];
+  cycle?: string;
+  status?: string;
+  memo?: string;
   selectedPrice: number;
   nextPaymentDate: string; // ISO date string
 }

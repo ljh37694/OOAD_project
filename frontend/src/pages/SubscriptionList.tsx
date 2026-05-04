@@ -1,42 +1,16 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
-
-const DUMMY_SUBSCRIPTIONS = [
-  {
-    name: "Netflix",
-    cat: "Entertainment",
-    cycle: "Monthly",
-    price: 17000,
-    status: "Active",
-  },
-  {
-    name: "Spotify",
-    cat: "Music",
-    cycle: "Monthly",
-    price: 10900,
-    status: "Active",
-  },
-  {
-    name: "YouTube Premium",
-    cat: "Entertainment",
-    cycle: "Monthly",
-    price: 14900,
-    status: "Active",
-  },
-  {
-    name: "Adobe Creative Cloud",
-    cat: "Productivity",
-    cycle: "Yearly",
-    price: 62000,
-    status: "Paused",
-  },
-];
+import { useSubscriptions } from "../context/SubscriptionContext";
+import SubscriptionDetailModal from "../components/SubscriptionDetailModal";
+import type { Subscription } from "../models/types";
 
 export default function SubscriptionList() {
   const [searchTerm, setSearchTerm] = useState("");
+  const { subscriptions } = useSubscriptions();
+  const [selectedSub, setSelectedSub] = useState<Subscription | null>(null);
 
-  const filteredSubscriptions = DUMMY_SUBSCRIPTIONS.filter((sub) =>
-    sub.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  const filteredSubscriptions = subscriptions.filter((sub) =>
+    (sub.name || sub.template?.templateName || "").toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -86,20 +60,29 @@ export default function SubscriptionList() {
           <tbody className="divide-y divide-white/5">
             {filteredSubscriptions.length > 0 ? (
               filteredSubscriptions.map((sub, idx) => (
-                <tr
-                  key={idx}
-                  className="hover:bg-white/5 transition-colors group"
-                >
-                  <td className="px-6 py-4 font-medium flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold shadow-md">
-                      {sub.name.charAt(0)}
-                    </div>
-                    {sub.name}
+                  <tr
+                    key={idx}
+                    className="hover:bg-white/5 transition-colors group cursor-pointer"
+                    onClick={() => setSelectedSub(sub)}
+                  >
+                    <td className="px-6 py-4 font-medium flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold shadow-md overflow-hidden">
+                        {(sub.icon || sub.template?.icon || "").startsWith("data:image") ? (
+                          <img src={sub.icon || sub.template?.icon} alt="icon" className="w-full h-full object-cover" />
+                        ) : (
+                          (sub.icon || sub.template?.icon || sub.name || sub.template?.templateName || "C").charAt(0)
+                        )}
+                      </div>
+                      {sub.name || sub.template?.templateName}
+                    </td>
+                  <td className="px-6 py-4 text-slate-400">
+                    {sub.categories && sub.categories.length > 0 
+                      ? sub.categories.map(c => `#${c}`).join(', ') 
+                      : sub.category || sub.template?.category}
                   </td>
-                  <td className="px-6 py-4 text-slate-400">{sub.cat}</td>
-                  <td className="px-6 py-4 text-slate-400">{sub.cycle}</td>
+                  <td className="px-6 py-4 text-slate-400">{sub.cycle || sub.template?.calender}</td>
                   <td className="px-6 py-4 font-semibold">
-                    ₩{sub.price.toLocaleString()}
+                    ₩{(sub.selectedPrice || 0).toLocaleString()}
                   </td>
                   <td className="px-6 py-4">
                     <span
@@ -127,6 +110,11 @@ export default function SubscriptionList() {
           </tbody>
         </table>
       </div>
+
+      <SubscriptionDetailModal 
+        subscription={selectedSub} 
+        onClose={() => setSelectedSub(null)} 
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import SubscriptionList from "./pages/SubscriptionList";
 import AddSubscription from "./pages/AddSubscription";
+import EditSubscription from "./pages/EditSubscription";
 export default function App() {
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
@@ -21,6 +22,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/subscriptions" element={<SubscriptionList />} />
             <Route path="/add" element={<AddSubscription />} />
+            <Route path="/edit/:id" element={<EditSubscription />} />
           </Routes>
         </div>
       </main>

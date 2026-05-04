@@ -3,10 +3,13 @@ import { ExternalLink } from 'lucide-react';
 
 interface Props {
   subscription: Subscription;
+  onClick?: () => void;
 }
 
-export default function SubscriptionCard({ subscription }: Props) {
+export default function SubscriptionCard({ subscription, onClick }: Props) {
   const t = subscription.template;
+  const name = subscription.name || t?.templateName || 'Custom Subscription';
+  const icon = t?.icon || subscription.name?.charAt(0) || t?.templateName?.charAt(0) || 'C';
   
   // Example dummy logo colors based on category/name
   const getGradient = (name: string) => {
@@ -17,13 +20,20 @@ export default function SubscriptionCard({ subscription }: Props) {
   };
 
   return (
-    <div className="glass-panel p-5 rounded-2xl flex items-center justify-between hover:scale-[1.02] transition-transform duration-300 group">
+    <div 
+      onClick={onClick}
+      className={`glass-panel p-5 rounded-2xl flex items-center justify-between transition-transform duration-300 group ${onClick ? 'cursor-pointer hover:scale-[1.02]' : ''}`}
+    >
       <div className="flex items-center gap-4">
-        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getGradient(t?.templateName || 'Custom')} flex items-center justify-center text-white font-bold text-xl shadow-lg`}>
-          {t?.templateName.charAt(0) || 'C'}
+        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${getGradient(name)} flex items-center justify-center text-white font-bold text-xl shadow-lg overflow-hidden`}>
+          {icon.startsWith('data:image') ? (
+            <img src={icon} alt={name} className="w-full h-full object-cover" />
+          ) : (
+            icon
+          )}
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-slate-100">{t?.templateName || 'Custom Subscription'}</h3>
+          <h3 className="text-lg font-semibold text-slate-100">{name}</h3>
           <p className="text-sm text-slate-400">Next payment: {new Date(subscription.nextPaymentDate).toLocaleDateString()}</p>
         </div>
       </div>

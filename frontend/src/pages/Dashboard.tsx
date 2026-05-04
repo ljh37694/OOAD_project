@@ -1,49 +1,15 @@
+import { useState } from "react";
 import { RefreshCw } from "lucide-react";
-import type { Subscription } from "../models/types";
 import SubscriptionCard from "../components/SubscriptionCard";
+import SubscriptionDetailModal from "../components/SubscriptionDetailModal";
+import { useSubscriptions } from "../context/SubscriptionContext";
+import type { Subscription } from "../models/types";
 
 export default function Dashboard() {
-  // Dummy Data for demonstration
-  const dummySubscriptions: Subscription[] = [
-    {
-      id: "1",
-      template: {
-        templateName: "Netflix",
-        price: 17000,
-        category: "Entertainment",
-        pageUrl: "https://netflix.com/cancel",
-        calender: "Monthly",
-      },
-      selectedPrice: 17000,
-      nextPaymentDate: "2026-04-18T00:00:00.000Z",
-    },
-    {
-      id: "2",
-      template: {
-        templateName: "Spotify",
-        price: 10900,
-        category: "Music",
-        pageUrl: "https://spotify.com/cancel",
-        calender: "Monthly",
-      },
-      selectedPrice: 10900,
-      nextPaymentDate: "2026-04-22T00:00:00.000Z",
-    },
-    {
-      id: "3",
-      template: {
-        templateName: "YouTube Premium",
-        price: 14900,
-        category: "Entertainment",
-        pageUrl: "https://youtube.com/cancel",
-        calender: "Monthly",
-      },
-      selectedPrice: 14900,
-      nextPaymentDate: "2026-05-02T00:00:00.000Z",
-    },
-  ];
+  const { subscriptions } = useSubscriptions();
+  const [selectedSub, setSelectedSub] = useState<Subscription | null>(null);
 
-  const totalMonthly = dummySubscriptions.reduce(
+  const totalMonthly = subscriptions.reduce(
     (acc, curr) => acc + curr.selectedPrice,
     0,
   );
@@ -80,7 +46,7 @@ export default function Dashboard() {
           <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center mb-3">
             <RefreshCw className="text-blue-400" size={24} />
           </div>
-          <h3 className="text-2xl font-bold">{dummySubscriptions.length}</h3>
+          <h3 className="text-2xl font-bold">{subscriptions.length}</h3>
           <p className="text-slate-400 text-sm">Active Subscriptions</p>
         </div>
       </div>
@@ -90,17 +56,26 @@ export default function Dashboard() {
           Upcoming Payments
         </h3>
         <div className="flex flex-col gap-4">
-          {dummySubscriptions
+          {subscriptions
             .sort(
               (a, b) =>
                 new Date(a.nextPaymentDate).getTime() -
                 new Date(b.nextPaymentDate).getTime(),
             )
             .map((sub) => (
-              <SubscriptionCard key={sub.id} subscription={sub} />
+              <SubscriptionCard 
+                key={sub.id} 
+                subscription={sub} 
+                onClick={() => setSelectedSub(sub)} 
+              />
             ))}
         </div>
       </div>
+
+      <SubscriptionDetailModal 
+        subscription={selectedSub} 
+        onClose={() => setSelectedSub(null)} 
+      />
     </div>
   );
 }
