@@ -20,7 +20,7 @@ export default function EditSubscription() {
 
   useEffect(() => {
     if (id) {
-      const sub = subscriptions.find(s => s.id === id);
+      const sub = subscriptions.find(s => String(s.id) === String(id));
       if (sub) {
         setSubscription(sub);
         setPrice(sub.selectedPrice || 0);

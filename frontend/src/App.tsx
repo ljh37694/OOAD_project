@@ -1,13 +1,28 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import SubscriptionList from "./pages/SubscriptionList";
 import AddSubscription from "./pages/AddSubscription";
 import EditSubscription from "./pages/EditSubscription";
+import Profile from "./pages/Profile";
+
 export default function App() {
   const location = useLocation();
+  const navigate = useNavigate();
   const isLoginPage = location.pathname === "/login";
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
+
+    if (token) {
+      localStorage.setItem("jwt_token", token);
+      // Remove token from URL for cleaner UI
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location, navigate]);
 
   return (
     <div className="flex bg-slate-900 text-slate-100 min-h-screen">
@@ -23,6 +38,7 @@ export default function App() {
             <Route path="/subscriptions" element={<SubscriptionList />} />
             <Route path="/add" element={<AddSubscription />} />
             <Route path="/edit/:id" element={<EditSubscription />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </div>
       </main>

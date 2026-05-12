@@ -17,7 +17,10 @@ export default function Login() {
           Manage your subscription loops effortlessly and save money smartly.
         </p>
 
-        <button className="w-full relative group">
+        <button 
+          onClick={() => window.location.href = "http://localhost:8080/oauth2/authorization/google"}
+          className="w-full relative group"
+        >
           <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl blur opacity-30 group-hover:opacity-70 transition duration-500"></div>
           <div className="relative flex items-center justify-center gap-3 bg-white text-slate-900 px-6 py-4 rounded-xl font-bold text-lg hover:bg-slate-50 transition-colors">
             <svg viewBox="0 0 24 24" className="w-5 h-5">

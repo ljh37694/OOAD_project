@@ -2,8 +2,11 @@ import React, {
   createContext,
   useContext,
   useState,
+  useEffect,
   type ReactNode,
 } from "react";
+import { fetchApi } from "../utils/api";
+import { useAuth } from "./AuthContext";
 import type { Subscription } from "../models/types";
 
 export interface ServiceTemplate {
@@ -140,14 +143,72 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     "Entertainment", "Music", "Productivity", "Games", "Education", "Utilities", "Lifestyle"
   ]);
 
-  const addSubscription = (sub: Subscription) => {
-    setSubscriptions((prev) => [...prev, sub]);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    const loadSubscriptions = async () => {
+      // If not logged in, we could clear data or keep dummy data.
+      if (!user) {
+        setSubscriptions(initialSubscriptions);
+        return;
+      }
+
+      try {
+        const response = await fetchApi('/api/subscriptions');
+        if (response.ok) {
+          const data = await response.json();
+          // Replace with DB data, or keep empty if none
+          setSubscriptions(data || []);
+        }
+      } catch (err) {
+        console.error("Failed to load subscriptions", err);
+      }
+    };
+    loadSubscriptions();
+  }, [user]);
+
+  const addSubscription = async (sub: Subscription) => {
+    try {
+      // Remove local dummy ID and template field (which is unused by the backend)
+      const { id, template, ...subToSave } = sub;
+      
+      const response = await fetchApi('/api/subscriptions', {
+        method: 'POST',
+        body: JSON.stringify(subToSave)
+      });
+      if (response.ok) {
+        const savedSub = await response.json();
+        setSubscriptions((prev) => [...prev, savedSub]);
+      } else {
+        console.error("Failed to save subscription");
+        // Fallback to local state if saving fails
+        setSubscriptions((prev) => [...prev, sub]);
+      }
+    } catch (err) {
+      console.error("Error saving subscription:", err);
+      // Fallback to local state
+      setSubscriptions((prev) => [...prev, sub]);
+    }
   };
 
-  const updateSubscription = (id: string, updatedSub: Partial<Subscription>) => {
+  const updateSubscription = async (id: string | number, updatedSub: Partial<Subscription>) => {
+    // Optimistic update for snappy UI
     setSubscriptions((prev) =>
-      prev.map((sub) => (sub.id === id ? { ...sub, ...updatedSub } : sub)),
+      prev.map((sub) => (String(sub.id) === String(id) ? { ...sub, ...updatedSub } : sub)),
     );
+
+    try {
+      const response = await fetchApi(`/api/subscriptions/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updatedSub)
+      });
+      if (!response.ok) {
+        console.error("Failed to update subscription in DB");
+        // We could revert the optimistic update here if needed
+      }
+    } catch (err) {
+      console.error("Error updating subscription in DB:", err);
+    }
   };
 
   const addTemplate = (template: ServiceTemplate) => {
