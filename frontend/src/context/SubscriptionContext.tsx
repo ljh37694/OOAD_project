@@ -26,6 +26,8 @@ interface SubscriptionContextType {
   updateSubscription: (id: string, updatedSub: Partial<Subscription>) => void;
   templates: ServiceTemplate[];
   addTemplate: (template: ServiceTemplate) => void;
+  editTemplate: (id: string, updated: Partial<ServiceTemplate>) => void;
+  deleteTemplate: (id: string) => void;
   availableCategories: string[];
   addCategory: (cat: string) => void;
   editCategory: (oldCat: string, newCat: string) => void;
@@ -146,10 +148,11 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
 
   useEffect(() => {
-    const loadSubscriptions = async () => {
+    const loadData = async () => {
       // If not logged in, we could clear data or keep dummy data.
       if (!user) {
         setSubscriptions(initialSubscriptions);
+        setTemplates(initialTemplates);
         return;
       }
 
@@ -157,14 +160,19 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
         const response = await fetchApi('/api/subscriptions');
         if (response.ok) {
           const data = await response.json();
-          // Replace with DB data, or keep empty if none
           setSubscriptions(data || []);
         }
+
+        const tmplResponse = await fetchApi('/api/templates');
+        if (tmplResponse.ok) {
+          const tmplData = await tmplResponse.json();
+          setTemplates([...initialTemplates, ...(tmplData || [])]);
+        }
       } catch (err) {
-        console.error("Failed to load subscriptions", err);
+        console.error("Failed to load data", err);
       }
     };
-    loadSubscriptions();
+    loadData();
   }, [user]);
 
   const addSubscription = async (sub: Subscription) => {
@@ -211,8 +219,44 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const addTemplate = (template: ServiceTemplate) => {
+  const addTemplate = async (template: ServiceTemplate) => {
     setTemplates((prev) => [...prev, template]);
+    try {
+      const { id, ...templateToSave } = template as any;
+      const response = await fetchApi('/api/templates', {
+        method: 'POST',
+        body: JSON.stringify(templateToSave)
+      });
+      if (response.ok) {
+        const savedTemplate = await response.json();
+        setTemplates(prev => prev.map(t => t.id === template.id ? savedTemplate : t));
+      }
+    } catch (err) {
+      console.error("Error saving template", err);
+    }
+  };
+
+  const editTemplate = async (id: string, updated: Partial<ServiceTemplate>) => {
+    setTemplates((prev) =>
+      prev.map((t) => (String(t.id) === String(id) ? { ...t, ...updated } : t))
+    );
+    try {
+      await fetchApi(`/api/templates/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updated)
+      });
+    } catch (err) {
+      console.error("Error updating template", err);
+    }
+  };
+
+  const deleteTemplate = async (id: string) => {
+    setTemplates((prev) => prev.filter((t) => String(t.id) !== String(id)));
+    try {
+      await fetchApi(`/api/templates/${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.error("Error deleting template", err);
+    }
   };
 
   const addCategory = (cat: string) => {
@@ -234,7 +278,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     <SubscriptionContext.Provider
       value={{ 
         subscriptions, addSubscription, updateSubscription,
-        templates, addTemplate,
+        templates, addTemplate, editTemplate, deleteTemplate,
         availableCategories, addCategory, editCategory, deleteCategory
       }}
     >

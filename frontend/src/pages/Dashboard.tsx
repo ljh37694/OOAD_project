@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { RefreshCw } from "lucide-react";
 import SubscriptionCard from "../components/SubscriptionCard";
 import SubscriptionDetailModal from "../components/SubscriptionDetailModal";
@@ -6,10 +7,13 @@ import { useSubscriptions } from "../context/SubscriptionContext";
 import type { Subscription } from "../models/types";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { subscriptions } = useSubscriptions();
   const [selectedSub, setSelectedSub] = useState<Subscription | null>(null);
 
-  const totalMonthly = subscriptions.reduce(
+  const activeSubscriptions = subscriptions.filter(s => s.status === "Active");
+
+  const totalMonthly = activeSubscriptions.reduce(
     (acc, curr) => acc + curr.selectedPrice,
     0,
   );
@@ -25,7 +29,10 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Total Spending Card */}
-        <div className="glass-panel p-6 rounded-3xl lg:col-span-2 relative overflow-hidden group">
+        <div 
+          onClick={() => navigate('/calendar')}
+          className="glass-panel p-6 rounded-3xl lg:col-span-2 relative overflow-hidden group cursor-pointer hover:scale-[1.01] transition-transform"
+        >
           <div className="absolute -right-20 -top-20 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl group-hover:bg-purple-500/30 transition-all duration-700"></div>
           <p className="text-slate-400 font-medium mb-1">
             Total Monthly Spending
@@ -46,7 +53,7 @@ export default function Dashboard() {
           <div className="w-14 h-14 rounded-full bg-blue-500/20 flex items-center justify-center mb-3">
             <RefreshCw className="text-blue-400" size={24} />
           </div>
-          <h3 className="text-2xl font-bold">{subscriptions.length}</h3>
+          <h3 className="text-2xl font-bold">{activeSubscriptions.length}</h3>
           <p className="text-slate-400 text-sm">Active Subscriptions</p>
         </div>
       </div>

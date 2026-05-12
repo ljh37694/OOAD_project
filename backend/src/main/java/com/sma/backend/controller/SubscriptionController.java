@@ -6,15 +6,22 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import com.sma.backend.domain.PaymentHistory;
+import com.sma.backend.repository.PaymentHistoryRepository;
+import java.time.ZonedDateTime;
+import java.time.LocalDate;
+
 @RestController
 @RequestMapping("/api/subscriptions")
 @CrossOrigin(origins = "http://localhost:5173") // Allow frontend access
 public class SubscriptionController {
 
     private final SubscriptionRepository repository;
+    private final PaymentHistoryRepository paymentHistoryRepository;
 
-    public SubscriptionController(SubscriptionRepository repository) {
+    public SubscriptionController(SubscriptionRepository repository, PaymentHistoryRepository paymentHistoryRepository) {
         this.repository = repository;
+        this.paymentHistoryRepository = paymentHistoryRepository;
     }
 
     @GetMapping
@@ -27,7 +34,54 @@ public class SubscriptionController {
     public Subscription create(@RequestBody Subscription subscription, org.springframework.security.core.Authentication authentication) {
         String email = (String) authentication.getPrincipal();
         subscription.setUserEmail(email);
-        return repository.save(subscription);
+        Subscription saved = repository.save(subscription);
+        
+        // Mock data seeding
+        if (saved.getNextPaymentDate() != null) {
+            try {
+                LocalDate nextDate = ZonedDateTime.parse(saved.getNextPaymentDate()).toLocalDate();
+                int cycleMonths = 1;
+                if (saved.getCycle() != null && saved.getCycle().contains("Month")) {
+                    String num = saved.getCycle().replaceAll("[^0-9]", "");
+                    if (!num.isEmpty()) {
+                        cycleMonths = Integer.parseInt(num);
+                    }
+                }
+                
+                // Past 3 periods
+                for (int i = 1; i <= 3; i++) {
+                    PaymentHistory history = PaymentHistory.builder()
+                            .userEmail(email)
+                            .subscriptionId(saved.getId())
+                            .subscriptionName(saved.getName())
+                            .price(saved.getSelectedPrice())
+                            .icon(saved.getIcon())
+                            .color("from-slate-600 to-slate-800")
+                            .paymentDate(nextDate.minusMonths((long) cycleMonths * i))
+                            .status("PAID")
+                            .build();
+                    paymentHistoryRepository.save(history);
+                }
+                
+                // Future scheduled payment
+                PaymentHistory scheduled = PaymentHistory.builder()
+                        .userEmail(email)
+                        .subscriptionId(saved.getId())
+                        .subscriptionName(saved.getName())
+                        .price(saved.getSelectedPrice())
+                        .icon(saved.getIcon())
+                        .color("from-slate-600 to-slate-800")
+                        .paymentDate(nextDate)
+                        .status("SCHEDULED")
+                        .build();
+                paymentHistoryRepository.save(scheduled);
+                
+            } catch (Exception e) {
+                // Ignore parse errors
+            }
+        }
+        
+        return saved;
     }
 
     @PutMapping("/{id}")

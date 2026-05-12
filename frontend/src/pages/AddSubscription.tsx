@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, CircleCheck, Minus } from "lucide-react";
+import { Plus, Search, CircleCheck, Minus, Edit2, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSubscriptions } from "../context/SubscriptionContext";
 import CategoryManageModal from "../components/CategoryManageModal";
 
 export default function AddSubscription() {
   const navigate = useNavigate();
-  const { subscriptions, addSubscription, templates, addTemplate, availableCategories } = useSubscriptions();
+  const { subscriptions, addSubscription, templates, addTemplate, editTemplate, deleteTemplate, availableCategories } = useSubscriptions();
   
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [isCustom, setIsCustom] = useState(false);
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
 
   // States for New Custom Service
@@ -22,6 +23,7 @@ export default function AddSubscription() {
   const [price, setPrice] = useState<number>(0);
   const [billingCycle, setBillingCycle] = useState<number>(1);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [memo, setMemo] = useState("");
 
   const filteredTemplates = templates.filter((t) =>
@@ -60,7 +62,7 @@ export default function AddSubscription() {
       cycle: `${billingCycle} Month${billingCycle > 1 ? 's' : ''}`,
       selectedPrice: price,
       nextPaymentDate: (() => {
-        const d = new Date();
+        const d = new Date(startDate);
         d.setMonth(d.getMonth() + billingCycle);
         return d.toISOString();
       })(),
@@ -73,21 +75,48 @@ export default function AddSubscription() {
   const handleAddCustomService = () => {
     if (!customName.trim()) return;
     
-    const newTemplate = {
-      id: Math.random().toString(),
-      name: customName,
-      category: "Custom",
-      price: 0,
-      color: "from-slate-600 to-slate-800",
-      icon: customIcon || customName.charAt(0),
-      pageUrl: customUrl
-    };
+    if (editingTemplateId) {
+      editTemplate(editingTemplateId, {
+        name: customName,
+        icon: customIcon || customName.charAt(0),
+        pageUrl: customUrl
+      });
+    } else {
+      const newTemplate = {
+        id: Math.random().toString(),
+        name: customName,
+        category: "Custom",
+        price: 0,
+        color: "from-slate-600 to-slate-800",
+        icon: customIcon || customName.charAt(0),
+        pageUrl: customUrl
+      };
+      addTemplate(newTemplate);
+    }
     
-    addTemplate(newTemplate);
+    closeCustomForm();
+  };
+
+  const closeCustomForm = () => {
     setIsCustom(false);
+    setEditingTemplateId(null);
     setCustomName("");
     setCustomIcon("");
     setCustomUrl("");
+  };
+
+  const openEditCustom = (e: React.MouseEvent, template: any) => {
+    e.stopPropagation();
+    setIsCustom(true);
+    setEditingTemplateId(template.id);
+    setCustomName(template.name);
+    setCustomIcon(template.icon !== template.name.charAt(0) ? template.icon : "");
+    setCustomUrl(template.pageUrl || "");
+  };
+
+  const handleDeleteCustom = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    deleteTemplate(id);
   };
 
   return (
@@ -118,25 +147,6 @@ export default function AddSubscription() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {filteredTemplates.map((template) => (
-              <button
-                key={template.id}
-                onClick={() => setSelectedTemplate(template)}
-                className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:scale-105 transition-transform group"
-              >
-                <div
-                  className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${template.color} flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden`}
-                >
-                  {(template.icon || "").startsWith("data:image") ? (
-                    <img src={template.icon} alt={template.name} className="w-full h-full object-cover" />
-                  ) : (
-                    template.icon || template.name.charAt(0)
-                  )}
-                </div>
-                <span className="font-semibold">{template.name}</span>
-              </button>
-            ))}
-
             <button
               onClick={() => setIsCustom(true)}
               className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:scale-105 transition-transform border border-dashed border-slate-500/50 hover:border-purple-500"
@@ -146,20 +156,65 @@ export default function AddSubscription() {
               </div>
               <span className="font-semibold text-slate-300">Custom</span>
             </button>
+
+            {filteredTemplates.map((template) => (
+              <div key={template.id} className="relative group">
+                <button
+                  onClick={() => setSelectedTemplate(template)}
+                  className="glass-panel w-full h-full p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:scale-105 transition-transform"
+                >
+                  <div
+                    className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${template.color} flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden`}
+                  >
+                    {(template.icon || "").startsWith("data:image") ? (
+                      <img src={template.icon} alt={template.name} className="w-full h-full object-cover" />
+                    ) : (
+                      template.icon || template.name.charAt(0)
+                    )}
+                  </div>
+                  <span className="font-semibold">{template.name}</span>
+                </button>
+                {template.category === "Custom" && (
+                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={(e) => openEditCustom(e, template)}
+                      className="p-2 bg-slate-800/80 hover:bg-slate-700 rounded-full text-slate-300 transition"
+                      title="Edit Custom Service"
+                    >
+                      <Edit2 size={14} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       ) : isCustom ? (
         <div className="glass-panel p-8 rounded-3xl space-y-6">
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-4 mb-8 relative">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden">
               {customIcon ? (
                 <img src={customIcon} alt="Custom Icon" className="w-full h-full object-cover" />
               ) : "C"}
             </div>
-            <div>
-              <h2 className="text-2xl font-bold">New Custom Service</h2>
-              <p className="text-slate-400">Add a custom service to your templates</p>
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold">{editingTemplateId ? "Edit Custom Service" : "New Custom Service"}</h2>
+              <p className="text-slate-400">{editingTemplateId ? "Update your custom service details" : "Add a custom service to your templates"}</p>
             </div>
+            
+            {editingTemplateId && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  deleteTemplate(editingTemplateId);
+                  closeCustomForm();
+                }}
+                className="absolute right-0 top-0 p-3 rounded-xl bg-red-900/30 text-red-400 hover:bg-red-900/60 hover:text-red-300 transition"
+                title="Delete Custom Service"
+              >
+                <Trash2 size={20} />
+              </button>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -209,7 +264,7 @@ export default function AddSubscription() {
 
           <div className="flex gap-4 pt-4">
             <button
-              onClick={() => setIsCustom(false)}
+              onClick={closeCustomForm}
               className="flex-1 py-3 rounded-xl font-medium bg-slate-800 text-white hover:bg-slate-700 transition"
             >
               Cancel
@@ -219,8 +274,8 @@ export default function AddSubscription() {
               disabled={!customName.trim()}
               className="flex-1 py-3 rounded-xl font-medium bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Plus size={20} />
-              Add Service
+              {editingTemplateId ? <CircleCheck size={20} /> : <Plus size={20} />}
+              {editingTemplateId ? "Save Changes" : "Add Service"}
             </button>
           </div>
         </div>
@@ -333,6 +388,17 @@ export default function AddSubscription() {
                   </button>
                 ))}
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-400 mb-2">
+                Subscription Start Date
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 [color-scheme:dark]"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-2">

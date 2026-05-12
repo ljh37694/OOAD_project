@@ -7,6 +7,7 @@ import SubscriptionList from "./pages/SubscriptionList";
 import AddSubscription from "./pages/AddSubscription";
 import EditSubscription from "./pages/EditSubscription";
 import Profile from "./pages/Profile";
+import CalendarView from "./pages/CalendarView";
 
 export default function App() {
   const location = useLocation();
@@ -39,6 +40,7 @@ export default function App() {
             <Route path="/add" element={<AddSubscription />} />
             <Route path="/edit/:id" element={<EditSubscription />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/calendar" element={<CalendarView />} />
           </Routes>
         </div>
       </main>

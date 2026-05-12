@@ -1,4 +1,5 @@
-import { X } from "lucide-react";
+import { useState } from "react";
+import { X, Calendar as CalendarIcon, RefreshCw, AlertTriangle } from "lucide-react";
 import type { Subscription } from "../models/types";
 import { useSubscriptions } from "../context/SubscriptionContext";
 import { useNavigate } from "react-router-dom";
@@ -11,6 +12,11 @@ interface Props {
 export default function SubscriptionDetailModal({ subscription, onClose }: Props) {
   const { subscriptions, updateSubscription } = useSubscriptions();
   const navigate = useNavigate();
+
+  const [showPauseConfirm, setShowPauseConfirm] = useState(false);
+  const [showActivateForm, setShowActivateForm] = useState(false);
+  const [activateStartDate, setActivateStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [activateCycle, setActivateCycle] = useState(1);
 
   if (!subscription) return null;
 
@@ -38,11 +44,106 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          onClick={onClose}
-          className="absolute top-6 right-6 text-slate-400 hover:text-white transition bg-white/5 hover:bg-white/10 p-2 rounded-full"
+          onClick={() => {
+            setShowPauseConfirm(false);
+            setShowActivateForm(false);
+            onClose();
+          }}
+          className="absolute top-6 right-6 text-slate-400 hover:text-white transition bg-white/5 hover:bg-white/10 p-2 rounded-full z-10"
         >
           <X size={20} />
         </button>
+
+        {showPauseConfirm ? (
+          <div className="flex flex-col items-center justify-center text-center py-12">
+            <div className="w-20 h-20 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mb-6">
+              <AlertTriangle size={40} />
+            </div>
+            <h2 className="text-2xl font-bold mb-4">정말로 멈추시겠습니까?</h2>
+            <p className="text-slate-400 mb-8">구독을 일시 정지하면 예정된 결제 내역이 캘린더에서 표시되지 않습니다.</p>
+            <div className="flex w-full gap-4">
+              <button 
+                onClick={() => setShowPauseConfirm(false)}
+                className="flex-1 py-3 rounded-xl font-medium bg-slate-800 text-white hover:bg-slate-700 transition"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  updateSubscription(currentSub.id, { status: "Paused" });
+                  setShowPauseConfirm(false);
+                }}
+                className="flex-1 py-3 rounded-xl font-medium bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition"
+              >
+                Pause
+              </button>
+            </div>
+          </div>
+        ) : showActivateForm ? (
+          <div className="flex flex-col py-6">
+            <h2 className="text-2xl font-bold mb-2">구독 활성화</h2>
+            <p className="text-slate-400 mb-8">새로운 시작일과 결제 주기를 설정해주세요.</p>
+            
+            <div className="space-y-6 mb-8">
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-2">
+                  <CalendarIcon size={16} className="inline mr-2" />
+                  구독 시작 날짜
+                </label>
+                <input
+                  type="date"
+                  value={activateStartDate}
+                  onChange={(e) => setActivateStartDate(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 [color-scheme:dark]"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-2">
+                  <RefreshCw size={16} className="inline mr-2" />
+                  결제 사이클
+                </label>
+                <div className="flex gap-2">
+                  {[1, 3, 6, 12].map(months => (
+                    <button
+                      key={months}
+                      type="button"
+                      onClick={() => setActivateCycle(months)}
+                      className={`flex-1 py-2 rounded-xl text-sm font-medium transition ${activateCycle === months ? 'bg-emerald-500 text-white' : 'bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10'}`}
+                    >
+                      {months} {months === 1 ? 'Month' : 'Months'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex w-full gap-4">
+              <button 
+                onClick={() => setShowActivateForm(false)}
+                className="flex-1 py-3 rounded-xl font-medium bg-slate-800 text-white hover:bg-slate-700 transition"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  const d = new Date(activateStartDate);
+                  d.setMonth(d.getMonth() + activateCycle);
+                  updateSubscription(currentSub.id, { 
+                    status: "Active",
+                    cycle: `${activateCycle} Month${activateCycle > 1 ? 's' : ''}`,
+                    nextPaymentDate: d.toISOString()
+                  });
+                  setShowActivateForm(false);
+                }}
+                className="flex-1 py-3 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-400 transition shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+              >
+                Active
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
 
         <div className="flex flex-col items-center text-center mb-8 pt-4">
           <div className={`w-24 h-24 rounded-3xl bg-gradient-to-br ${getGradient(name)} flex items-center justify-center text-white font-bold text-4xl shadow-xl mb-6 overflow-hidden`}>
@@ -85,8 +186,11 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
               </div>
               <button
                 onClick={() => {
-                  const newStatus = currentSub.status === "Active" ? "Paused" : "Active";
-                  updateSubscription(currentSub.id, { status: newStatus });
+                  if (currentSub.status === "Active") {
+                    setShowPauseConfirm(true);
+                  } else {
+                    setShowActivateForm(true);
+                  }
                 }}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
                   currentSub.status === "Active"
@@ -116,6 +220,8 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
             Edit Subscription
           </button>
         </div>
+        </>
+        )}
       </div>
     </div>
   );

@@ -34,7 +34,11 @@ export default function SubscriptionCard({ subscription, onClick }: Props) {
         </div>
         <div>
           <h3 className="text-lg font-semibold text-slate-100">{name}</h3>
-          <p className="text-sm text-slate-400">Next payment: {new Date(subscription.nextPaymentDate).toLocaleDateString()}</p>
+          {subscription.status === 'Paused' ? (
+            <p className="text-sm text-amber-400 font-medium">Status: Paused</p>
+          ) : (
+            <p className="text-sm text-slate-400">Next payment: {new Date(subscription.nextPaymentDate).toLocaleDateString()}</p>
+          )}
         </div>
       </div>
       
