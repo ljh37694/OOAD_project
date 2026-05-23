@@ -36,7 +36,7 @@ export default function CategoryManageModal({ isOpen, onClose }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Manage Hashtags</h2>
+          <h2 className="text-2xl font-bold">해시태그 관리</h2>
           <button
             onClick={onClose}
             className="text-slate-400 hover:text-white transition bg-white/5 hover:bg-white/10 w-9 h-9 flex items-center justify-center rounded-full"
@@ -51,7 +51,7 @@ export default function CategoryManageModal({ isOpen, onClose }: Props) {
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            placeholder="New hashtag..."
+            placeholder="새 해시태그..."
             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
           <button
@@ -108,7 +108,7 @@ export default function CategoryManageModal({ isOpen, onClose }: Props) {
             </div>
           ))}
           {availableCategories.length === 0 && (
-            <p className="text-center text-slate-500 py-4">No hashtags available.</p>
+            <p className="text-center text-slate-500 py-4">등록된 해시태그가 없습니다.</p>
           )}
         </div>
       </div>

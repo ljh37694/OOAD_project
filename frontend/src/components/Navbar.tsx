@@ -7,9 +7,9 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   
   const navItems = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { name: 'Subscriptions', path: '/subscriptions', icon: List },
-    { name: 'Add New', path: user ? '/add' : '/login', icon: PlusCircle },
+    { name: '대시보드', path: '/', icon: LayoutDashboard },
+    { name: '구독 관리', path: '/subscriptions', icon: List },
+    { name: '구독 추가', path: user ? '/add' : '/login', icon: PlusCircle },
   ];
 
   return (
@@ -17,10 +17,10 @@ export default function Navbar() {
       <div className="hidden md:flex flex-col mb-10 w-full px-2 gap-6">
         {/* Logo Section */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 flex items-center justify-center font-bold text-white shadow-lg">
+          <div className="w-8 h-8 rounded-full bg-linear-to-tr from-purple-500 to-blue-500 flex items-center justify-center font-bold text-white shadow-lg">
             S
           </div>
-          <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
+          <span className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-purple-400 to-blue-400">
             SMA
           </span>
         </div>
@@ -37,7 +37,7 @@ export default function Navbar() {
             )}
             <div className="flex flex-col overflow-hidden">
               <span className="text-sm font-semibold text-slate-200 truncate group-hover:text-white transition-colors">{user.name}</span>
-              <span className="text-xs text-slate-500 truncate">View Profile</span>
+              <span className="text-xs text-slate-500 truncate">프로필 보기</span>
             </div>
           </Link>
         ) : (
@@ -47,7 +47,7 @@ export default function Navbar() {
             </div>
             <div className="flex flex-col overflow-hidden">
               <span className="text-sm font-semibold text-slate-400 truncate group-hover:text-white transition-colors">로그인이 필요합니다</span>
-              <span className="text-xs text-slate-500 truncate">Click to Login</span>
+              <span className="text-xs text-slate-500 truncate">로그인하려면 클릭</span>
             </div>
           </Link>
         )}
@@ -81,7 +81,7 @@ export default function Navbar() {
             className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 w-full text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"
           >
             <LogOut size={20} />
-            <span className="font-medium">Logout</span>
+            <span className="font-medium">로그아웃</span>
           </button>
         ) : (
           <Link
@@ -89,7 +89,7 @@ export default function Navbar() {
             className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 w-full text-slate-400 hover:text-blue-400 hover:bg-blue-500/10"
           >
             <UserIcon size={20} />
-            <span className="font-medium">Login</span>
+            <span className="font-medium">로그인</span>
           </Link>
         )}
       </div>

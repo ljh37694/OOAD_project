@@ -5,6 +5,7 @@ import { useSubscriptions } from "../context/SubscriptionContext";
 import { useAuth } from "../context/AuthContext";
 import SubscriptionDetailModal from "../components/SubscriptionDetailModal";
 import type { Subscription } from "../models/types";
+import { getLogoGradient, getLogoIcon, isImageUrl } from "../utils/logo";
 
 export default function SubscriptionList() {
   const navigate = useNavigate();
@@ -25,10 +26,10 @@ export default function SubscriptionList() {
       <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl md:text-4xl font-bold mb-2">
-            My Subscriptions
+            내 구독 서비스
           </h1>
           <p className="text-slate-400">
-            Manage all your active and inactive subscriptions.
+            가입 중이거나 정지된 모든 구독 서비스를 관리하세요.
           </p>
         </div>
 
@@ -39,7 +40,7 @@ export default function SubscriptionList() {
           />
           <input
             type="text"
-            placeholder="Search service..."
+            placeholder="서비스 검색..."
             className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -48,12 +49,12 @@ export default function SubscriptionList() {
       </header>
 
       <div className="flex flex-wrap gap-2 mb-6 items-center">
-        <span className="text-sm text-slate-400 mr-2">Filters:</span>
+        <span className="text-sm text-slate-400 mr-2">필터:</span>
         <button
           onClick={() => setSelectedTag(null)}
           className={`px-3 py-1.5 rounded-full text-sm font-medium transition ${!selectedTag ? 'bg-purple-500 text-white' : 'bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10'}`}
         >
-          All
+          전체
         </button>
         {availableCategories.map(cat => (
           <button
@@ -71,16 +72,16 @@ export default function SubscriptionList() {
           <thead>
             <tr className="bg-white/5 border-b border-white/10">
               <th className="px-6 py-4 font-semibold text-slate-300">
-                Service
+                서비스명
               </th>
               <th className="px-6 py-4 font-semibold text-slate-300">
-                Category
+                카테고리
               </th>
               <th className="px-6 py-4 font-semibold text-slate-300">
-                Billing Cycle
+                결제 주기
               </th>
-              <th className="px-6 py-4 font-semibold text-slate-300">Price</th>
-              <th className="px-6 py-4 font-semibold text-slate-300">Status</th>
+              <th className="px-6 py-4 font-semibold text-slate-300">금액</th>
+              <th className="px-6 py-4 font-semibold text-slate-300">상태</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-white/5">
@@ -93,13 +94,19 @@ export default function SubscriptionList() {
                       onClick={() => setSelectedSub(sub)}
                     >
                       <td className="px-6 py-4 font-medium flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xs font-bold shadow-md overflow-hidden">
-                          {(sub.icon || sub.template?.icon || "").startsWith("data:image") ? (
-                            <img src={sub.icon || sub.template?.icon} alt="icon" className="w-full h-full object-cover" />
-                          ) : (
-                            (sub.icon || sub.template?.icon || sub.name || sub.template?.templateName || "C").charAt(0)
-                          )}
-                        </div>
+                        {(() => {
+                          const sName = sub.name || sub.template?.templateName || "C";
+                          const sIcon = sub.icon || sub.template?.icon || getLogoIcon(sName) || sName.charAt(0);
+                          return (
+                            <div className={`w-8 h-8 rounded-lg bg-linear-to-br ${getLogoGradient(sName)} flex items-center justify-center text-xs font-bold shadow-md overflow-hidden`}>
+                              {isImageUrl(sIcon) ? (
+                                <img src={sIcon} alt="icon" className="w-full h-full object-cover" />
+                              ) : (
+                                sIcon
+                              )}
+                            </div>
+                          );
+                        })()}
                         {sub.name || sub.template?.templateName}
                       </td>
                     <td className="px-6 py-4 text-slate-400">
@@ -107,7 +114,18 @@ export default function SubscriptionList() {
                         ? sub.categories.map(c => `#${c}`).join(', ') 
                         : sub.category || sub.template?.category}
                     </td>
-                    <td className="px-6 py-4 text-slate-400">{sub.cycle || sub.template?.calender}</td>
+                    <td className="px-6 py-4 text-slate-400">
+                      {(() => {
+                        const rawCycle = sub.cycle || sub.template?.calender || "";
+                        if (rawCycle.toLowerCase().includes("month")) {
+                          return rawCycle.replace(/months?/i, "개월");
+                        }
+                        if (rawCycle.toLowerCase().includes("year")) {
+                          return rawCycle.replace(/years?/i, "년");
+                        }
+                        return rawCycle;
+                      })()}
+                    </td>
                     <td className="px-6 py-4 font-semibold">
                       ₩{(sub.selectedPrice || 0).toLocaleString()}
                     </td>
@@ -119,7 +137,7 @@ export default function SubscriptionList() {
                             : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                         }`}
                       >
-                        {sub.status}
+                        {sub.status === "Active" ? "활성" : "일시정지"}
                       </span>
                     </td>
                   </tr>
@@ -130,7 +148,7 @@ export default function SubscriptionList() {
                     colSpan={5}
                     className="px-6 py-8 text-center text-slate-400"
                   >
-                    No subscriptions found matching "{searchTerm}".
+                    검색어 "{searchTerm}"에 매칭되는 구독이 없습니다.
                   </td>
                 </tr>
               )
@@ -138,13 +156,13 @@ export default function SubscriptionList() {
               <tr>
                 <td colSpan={5} className="px-6 py-16 text-center">
                   <div className="flex flex-col items-center justify-center">
-                    <p className="text-slate-400 text-lg mb-6">You need to log in to view and manage your subscriptions.</p>
+                    <p className="text-slate-400 text-lg mb-6">구독 내역을 보거나 관리하려면 로그인이 필요합니다.</p>
                     <button
                       onClick={() => navigate('/login')}
-                      className="flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500 transition-all shadow-lg hover:shadow-purple-500/25"
+                      className="flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-linear-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500 transition-all shadow-lg hover:shadow-purple-500/25"
                     >
                       <LogIn size={20} />
-                      Log In / Sign Up
+                      로그인 / 회원가입
                     </button>
                   </div>
                 </td>

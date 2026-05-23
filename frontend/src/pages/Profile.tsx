@@ -17,15 +17,15 @@ export default function Profile() {
     return (
       <div className="flex flex-col items-center justify-center h-full text-slate-400">
         <UserIcon size={48} className="mb-4 text-slate-500" />
-        <h2 className="text-xl font-bold">Not Logged In</h2>
-        <p className="mt-2 text-sm">Please log in to view your profile.</p>
+        <h2 className="text-xl font-bold">로그인되지 않음</h2>
+        <p className="mt-2 text-sm">프로필을 보려면 로그인해 주세요.</p>
       </div>
     );
   }
 
   // Format dates
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Not Provided';
+    if (!dateString) return '입력되지 않음';
     const date = new Date(dateString);
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
@@ -36,8 +36,8 @@ export default function Profile() {
 
   return (
     <div className="animate-in slide-in-from-bottom-4 fade-in duration-500">
-      <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 mb-8">
-        My Profile
+      <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-blue-400 mb-8">
+        내 프로필
       </h1>
 
       <div className="glass-panel p-8 md:p-10 rounded-[2rem] max-w-2xl mx-auto shadow-2xl relative overflow-hidden">
@@ -48,7 +48,7 @@ export default function Profile() {
         <div className="flex flex-col md:flex-row gap-10 items-center md:items-start relative z-10">
           {/* Profile Picture */}
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full blur opacity-40 group-hover:opacity-70 transition duration-500"></div>
+            <div className="absolute -inset-1 bg-linear-to-r from-purple-500 to-blue-500 rounded-full blur opacity-40 group-hover:opacity-70 transition duration-500"></div>
             {user.picture ? (
               <img 
                 src={user.picture} 
@@ -67,7 +67,7 @@ export default function Profile() {
             <div>
               <h2 className="text-2xl font-bold text-white mb-1">{user.name}</h2>
               <span className="inline-block px-3 py-1 bg-purple-500/20 text-purple-300 text-xs font-semibold rounded-full border border-purple-500/30">
-                User Member
+                일반 회원
               </span>
             </div>
 
@@ -78,7 +78,7 @@ export default function Profile() {
                   <Mail size={20} />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Email Address</p>
+                  <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">이메일 주소</p>
                   <p className="text-slate-200 font-medium">{user.email}</p>
                 </div>
               </div>
@@ -89,12 +89,12 @@ export default function Profile() {
                   <Calendar size={20} />
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Birthdate</p>
+                  <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">생년월일</p>
                   <p className="text-slate-200 font-medium">{formatDate(user.birthdate)}</p>
                 </div>
                 {!user.birthdate && (
                   <button className="text-xs text-purple-400 hover:text-purple-300 px-3 py-1 bg-purple-500/10 rounded-full transition-colors">
-                    Add
+                    추가
                   </button>
                 )}
               </div>
@@ -105,7 +105,7 @@ export default function Profile() {
                   <Clock size={20} />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">Member Since</p>
+                  <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">가입 일자</p>
                   <p className="text-slate-200 font-medium">{formatDate(user.createdAt)}</p>
                 </div>
               </div>

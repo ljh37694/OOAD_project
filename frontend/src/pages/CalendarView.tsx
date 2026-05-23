@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { fetchApi } from "../utils/api";
 import { useSubscriptions } from "../context/SubscriptionContext";
+import { getLogoGradient, getLogoIcon, isImageUrl } from "../utils/logo";
 
 interface PaymentHistory {
   id: number;
@@ -43,8 +44,8 @@ export default function CalendarView() {
   const prevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
 
-  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const monthNames = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
+  const days = ["일", "월", "화", "수", "목", "금", "토"];
 
   const isPastMonth = currentDate.getFullYear() < new Date().getFullYear() || 
                       (currentDate.getFullYear() === new Date().getFullYear() && currentDate.getMonth() < new Date().getMonth());
@@ -122,47 +123,47 @@ export default function CalendarView() {
   const monthTotal = monthPayments.reduce((acc, curr) => acc + curr.price, 0);
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-xl mx-auto pb-20">
-      <header className="mb-8 flex items-center justify-between">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-xl mx-auto pb-4">
+      <header className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-1 flex items-center gap-3">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
+          <h1 className="text-3xl md:text-4xl font-extrabold mb-0.5 flex items-center gap-3">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-white to-slate-400">
               ₩{monthTotal.toLocaleString()}
             </span>
           </h1>
-          <p className="text-slate-400 font-medium">
-            {isPastMonth ? "Total Paid in" : "Scheduled for"} {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          <p className="text-sm text-slate-400 font-medium">
+            {isPastMonth ? "지출 완료 금액" : "결제 예정 금액"} ({monthNames[currentDate.getMonth()]} {currentDate.getFullYear()})
           </p>
         </div>
       </header>
 
-      <div className="glass-panel p-6 rounded-3xl">
-        <div className="flex items-center justify-between mb-8">
-          <button onClick={prevMonth} className="p-2 hover:bg-white/10 rounded-full transition text-slate-300">
-            <ChevronLeft size={24} />
+      <div className="glass-panel p-4 md:p-5 rounded-3xl">
+        <div className="flex items-center justify-between mb-4">
+          <button onClick={prevMonth} className="p-1.5 hover:bg-white/10 rounded-full transition text-slate-300">
+            <ChevronLeft size={20} />
           </button>
-          <h2 className="text-2xl font-bold text-white text-center">
+          <h2 className="text-xl font-bold text-white text-center">
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </h2>
-          <button onClick={nextMonth} className="p-2 hover:bg-white/10 rounded-full transition text-slate-300">
-            <ChevronRight size={24} />
+          <button onClick={nextMonth} className="p-1.5 hover:bg-white/10 rounded-full transition text-slate-300">
+            <ChevronRight size={20} />
           </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-2 mb-4">
+        <div className="grid grid-cols-7 gap-1.5 mb-2">
           {days.map(day => (
-            <div key={day} className="text-center font-semibold text-slate-400 py-2">
+            <div key={day} className="text-center text-xs font-semibold text-slate-400 py-1">
               {day}
             </div>
           ))}
         </div>
 
         {isLoading ? (
-          <div className="h-64 flex items-center justify-center text-slate-400">Loading calendar...</div>
+          <div className="h-48 flex items-center justify-center text-slate-400">캘린더 로딩 중...</div>
         ) : (
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1.5">
             {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-              <div key={`empty-${i}`} className="min-h-[80px] p-2 rounded-xl bg-white/5 opacity-50"></div>
+              <div key={`empty-${i}`} className="min-h-[50px] md:min-h-[60px] p-1.5 rounded-xl bg-white/5 opacity-50"></div>
             ))}
             
             {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -181,12 +182,12 @@ export default function CalendarView() {
                       setSelectedDatePayments({ date: dateStr, payments: dayPayments });
                     }
                   }}
-                  className={`min-h-[80px] p-2 rounded-xl border flex flex-col transition-colors ${
+                  className={`min-h-[50px] md:min-h-[60px] p-1.5 rounded-xl border flex flex-col transition-colors ${
                     isToday ? 'bg-purple-900/20 border-purple-500/50' : 'bg-white/5 border-white/5'
                   } ${dayPayments.length > 0 ? 'cursor-pointer hover:bg-white/10' : ''}`}
                 >
                   <div className="flex justify-between items-start mb-auto">
-                    <span className={`text-sm font-medium ${isToday ? 'text-purple-400 font-bold' : 'text-slate-400'} ${dayPayments.length > 0 ? 'text-slate-200' : ''}`}>
+                    <span className={`text-xs md:text-sm font-medium ${isToday ? 'text-purple-400 font-bold' : 'text-slate-400'} ${dayPayments.length > 0 ? 'text-slate-200' : ''}`}>
                       {day}
                     </span>
                   </div>
@@ -194,7 +195,7 @@ export default function CalendarView() {
                   {dayPayments.length > 0 && (
                     <div className="mt-1 flex flex-col gap-0.5">
                       {dayPayments.map((payment, idx) => (
-                        <div key={`${payment.id}-${idx}`} className="text-[10px] sm:text-xs font-semibold text-right text-slate-300 truncate" title={payment.subscriptionName}>
+                        <div key={`${payment.id}-${idx}`} className="text-[9px] md:text-[10px] font-semibold text-right text-slate-300 truncate" title={payment.subscriptionName}>
                           ₩{payment.price.toLocaleString()}
                         </div>
                       ))}
@@ -224,23 +225,28 @@ export default function CalendarView() {
               {selectedDatePayments.payments.map((p, idx) => (
                 <div key={`${p.id}-${idx}`} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex-shrink-0 bg-gradient-to-br ${p.color || 'from-slate-600 to-slate-800'} flex items-center justify-center overflow-hidden`}>
-                      {(p.icon || "").startsWith('data:image') ? (
-                        <img src={p.icon} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-sm text-white font-bold">{p.icon || p.subscriptionName.charAt(0)}</span>
-                      )}
+                    <div className={`w-10 h-10 rounded-lg flex-shrink-0 bg-linear-to-br ${getLogoGradient(p.subscriptionName)} flex items-center justify-center overflow-hidden`}>
+                     {(() => {
+                       const iconVal = p.icon || getLogoIcon(p.subscriptionName) || p.subscriptionName.charAt(0);
+                       return isImageUrl(iconVal) ? (
+                         <img src={iconVal} alt="" className="w-full h-full object-cover" />
+                       ) : (
+                         <span className="text-sm text-white font-bold">{iconVal}</span>
+                       );
+                     })()}
                     </div>
-                    <div>
-                      <p className="font-semibold text-slate-200">{p.subscriptionName}</p>
-                      <p className={`text-xs font-medium ${p.status === 'PAID' ? 'text-emerald-400' : 'text-slate-400'}`}>{p.status}</p>
-                    </div>
+                     <div>
+                       <p className="font-semibold text-slate-200">{p.subscriptionName}</p>
+                       <p className={`text-xs font-medium ${p.status === 'PAID' ? 'text-emerald-400' : 'text-slate-400'}`}>
+                         {p.status === 'PAID' ? '결제완료' : '결제예정'}
+                       </p>
+                     </div>
                   </div>
                   <span className="font-bold text-slate-100">₩{p.price.toLocaleString()}</span>
                 </div>
               ))}
-              <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center text-lg font-bold">
-                <span className="text-slate-400">Total</span>
+               <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center text-lg font-bold">
+                <span className="text-slate-400">합계</span>
                 <span className="text-purple-400">₩{selectedDatePayments.payments.reduce((a, b) => a + b.price, 0).toLocaleString()}</span>
               </div>
             </div>

@@ -3,6 +3,7 @@ import { X, Calendar as CalendarIcon, RefreshCw, AlertTriangle } from "lucide-re
 import type { Subscription } from "../models/types";
 import { useSubscriptions } from "../context/SubscriptionContext";
 import { useNavigate } from "react-router-dom";
+import { getLogoGradient, getLogoIcon, isImageUrl } from "../utils/logo";
 
 interface Props {
   subscription: Subscription | null;
@@ -24,18 +25,12 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
 
   const t = currentSub.template;
   const name = currentSub.name || t?.templateName || "Custom Subscription";
-  const icon = t?.icon || currentSub.name?.charAt(0) || t?.templateName?.charAt(0) || "C";
+  const icon = currentSub.icon || t?.icon || getLogoIcon(name) || name.charAt(0);
   const categories = currentSub.categories && currentSub.categories.length > 0 
     ? currentSub.categories 
     : [currentSub.category || t?.category || "Uncategorized"];
   const cycle = currentSub.cycle || t?.calender || "Monthly";
 
-  const getGradient = (n: string) => {
-    if (n.toLowerCase().includes("netflix")) return "from-red-600 to-red-900";
-    if (n.toLowerCase().includes("youtube")) return "from-red-500 to-rose-600";
-    if (n.toLowerCase().includes("spotify")) return "from-green-500 to-emerald-700";
-    return "from-slate-600 to-slate-800";
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -66,7 +61,7 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
                 onClick={() => setShowPauseConfirm(false)}
                 className="flex-1 py-3 rounded-xl font-medium bg-slate-800 text-white hover:bg-slate-700 transition"
               >
-                Cancel
+                취소
               </button>
               <button 
                 onClick={() => {
@@ -77,7 +72,7 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
                 }}
                 className="flex-1 py-3 rounded-xl font-medium bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition"
               >
-                Pause
+                일시 정지
               </button>
             </div>
           </div>
@@ -114,7 +109,7 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
                       onClick={() => setActivateCycle(months)}
                       className={`flex-1 py-2 rounded-xl text-sm font-medium transition ${activateCycle === months ? 'bg-emerald-500 text-white' : 'bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10'}`}
                     >
-                      {months} {months === 1 ? 'Month' : 'Months'}
+                      {months} {months === 1 ? '개월' : '개월'}
                     </button>
                   ))}
                 </div>
@@ -126,7 +121,7 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
                 onClick={() => setShowActivateForm(false)}
                 className="flex-1 py-3 rounded-xl font-medium bg-slate-800 text-white hover:bg-slate-700 transition"
               >
-                Cancel
+                취소
               </button>
               <button 
                 onClick={() => {
@@ -135,7 +130,7 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
                     d.setMonth(d.getMonth() + activateCycle);
                     updateSubscription(currentSub.id, { 
                       status: "Active",
-                      cycle: `${activateCycle} Month${activateCycle > 1 ? 's' : ''}`,
+                      cycle: `${activateCycle} 개월`,
                       nextPaymentDate: d.toISOString()
                     });
                   }
@@ -143,7 +138,7 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
                 }}
                 className="flex-1 py-3 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-400 transition shadow-[0_0_15px_rgba(16,185,129,0.3)]"
               >
-                Active
+                활성화
               </button>
             </div>
           </div>
@@ -151,8 +146,8 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
           <>
 
         <div className="flex flex-col items-center text-center mb-8 pt-4">
-          <div className={`w-24 h-24 rounded-3xl bg-gradient-to-br ${getGradient(name)} flex items-center justify-center text-white font-bold text-4xl shadow-xl mb-6 overflow-hidden`}>
-            {icon.startsWith("data:image") ? (
+          <div className={`w-24 h-24 rounded-3xl bg-linear-to-br ${getLogoGradient(name)} flex items-center justify-center text-white font-bold text-4xl shadow-xl mb-6 overflow-hidden`}>
+            {isImageUrl(icon) ? (
               <img src={icon} alt={name} className="w-full h-full object-cover" />
             ) : (
               icon
@@ -170,23 +165,23 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
 
         <div className="space-y-6">
           <div className="glass-panel p-5 rounded-2xl bg-white/5 border-none">
-            <p className="text-slate-400 text-sm font-medium mb-1">Billing Details</p>
+            <p className="text-slate-400 text-sm font-medium mb-1">결제 상세 정보</p>
             <div className="flex items-end justify-between">
               <span className="text-3xl font-bold">₩{currentSub.selectedPrice.toLocaleString()}</span>
-              <span className="text-slate-400 mb-1">/ {cycle.toLowerCase()}</span>
+              <span className="text-slate-400 mb-1">/ {cycle.toLowerCase().includes('month') ? '월' : cycle.toLowerCase().includes('year') ? '년' : cycle}</span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-white/5 rounded-2xl p-4 flex flex-col justify-center">
-              <p className="text-slate-400 text-sm font-medium mb-1">Next Payment</p>
+              <p className="text-slate-400 text-sm font-medium mb-1">다음 결제일</p>
               <p className="font-semibold">{new Date(currentSub.nextPaymentDate).toLocaleDateString()}</p>
             </div>
             <div className="bg-white/5 rounded-2xl p-4 flex justify-between items-center">
               <div>
-                <p className="text-slate-400 text-sm font-medium mb-1">Status</p>
+                <p className="text-slate-400 text-sm font-medium mb-1">상태</p>
                 <p className={`font-semibold ${currentSub.status === "Active" ? "text-emerald-400" : "text-amber-400"}`}>
-                  {currentSub.status || "Active"}
+                  {currentSub.status === "Active" ? "활성" : "일시정지"}
                 </p>
               </div>
               <button
@@ -203,14 +198,14 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
                     : "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30"
                 }`}
               >
-                {currentSub.status === "Active" ? "Pause" : "Activate"}
+                {currentSub.status === "Active" ? "정지" : "활성"}
               </button>
             </div>
           </div>
 
           {currentSub.memo && (
             <div className="bg-white/5 rounded-2xl p-4">
-              <p className="text-slate-400 text-sm font-medium mb-2">Memo / Notes</p>
+              <p className="text-slate-400 text-sm font-medium mb-2">메모 / 노트</p>
               <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{currentSub.memo}</p>
             </div>
           )}
@@ -222,7 +217,7 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
             }}
             className="block w-full py-4 text-center rounded-xl font-medium bg-slate-800 text-slate-200 hover:bg-slate-700 transition"
           >
-            Edit Subscription
+            구독 정보 수정
           </button>
         </div>
         </>

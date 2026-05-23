@@ -3,6 +3,7 @@ import { Plus, Search, CircleCheck, Minus, Edit2, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSubscriptions } from "../context/SubscriptionContext";
 import CategoryManageModal from "../components/CategoryManageModal";
+import { getLogoIcon, isImageUrl } from "../utils/logo";
 
 export default function AddSubscription() {
   const navigate = useNavigate();
@@ -120,10 +121,10 @@ export default function AddSubscription() {
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-2xl mx-auto">
       <header className="mb-8">
         <h1 className="text-3xl md:text-4xl font-bold mb-2">
-          Add Subscription
+          구독 추가
         </h1>
         <p className="text-slate-400">
-          Choose a popular service or add your own.
+          인기 서비스를 선택하거나 나만의 구독 서비스를 추가해보세요.
         </p>
       </header>
 
@@ -136,67 +137,105 @@ export default function AddSubscription() {
             />
             <input
               type="text"
-              placeholder="Search services (e.g. Netflix)"
+              placeholder="서비스 검색 (예: 넷플릭스)"
               className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all font-medium"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <button
-              onClick={() => setIsCustom(true)}
-              className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:scale-105 transition-transform border border-dashed border-slate-500/50 hover:border-purple-500"
-            >
-              <div className="w-16 h-16 rounded-full flex items-center justify-center text-slate-400 bg-white/5">
-                <Plus size={32} />
-              </div>
-              <span className="font-semibold text-slate-300">Custom</span>
-            </button>
-
-            {filteredTemplates.map((template) => (
-              <div key={template.id} className="relative group">
-                <button
-                  onClick={() => setSelectedTemplate(template)}
-                  className="glass-panel w-full h-full p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:scale-105 transition-transform"
-                >
-                  <div
-                    className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${template.color} flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden`}
-                  >
-                    {(template.icon || "").startsWith("data:image") ? (
-                      <img src={template.icon} alt={template.name} className="w-full h-full object-cover" />
-                    ) : (
-                      template.icon || template.name.charAt(0)
-                    )}
-                  </div>
-                  <span className="font-semibold">{template.name}</span>
-                </button>
-                {template.category === "Custom" && (
-                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
-                      onClick={(e) => openEditCustom(e, template)}
-                      className="p-2 bg-slate-800/80 hover:bg-slate-700 rounded-full text-slate-300 transition"
-                      title="Edit Custom Service"
+          {/* 인기 구독 서비스 섹션 */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-slate-200">인기 구독 서비스</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {filteredTemplates
+                .filter((t) => t.category !== "Custom")
+                .map((template) => (
+                  <div key={template.id} className="relative group">
+                    <button
+                      onClick={() => setSelectedTemplate(template)}
+                      className="glass-panel w-full h-full p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:scale-105 transition-transform"
                     >
-                      <Edit2 size={14} />
+                      <div
+                        className={`w-16 h-16 rounded-2xl bg-linear-to-br ${template.color} flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden`}
+                      >
+                        {(() => {
+                          const iconVal = template.icon || getLogoIcon(template.name) || template.name.charAt(0);
+                          return isImageUrl(iconVal) ? (
+                            <img src={iconVal} alt={template.name} className="w-full h-full object-cover" />
+                          ) : (
+                            iconVal
+                          );
+                        })()}
+                      </div>
+                      <span className="font-semibold">{template.name}</span>
                     </button>
                   </div>
-                )}
-              </div>
-            ))}
+                ))}
+            </div>
+          </div>
+
+          {/* 나만의 서비스 섹션 */}
+          <div className="space-y-4 mt-8">
+            <h2 className="text-xl font-bold text-slate-200">나만의 서비스</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <button
+                onClick={() => setIsCustom(true)}
+                className="glass-panel p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:scale-105 transition-transform border border-dashed border-slate-500/50 hover:border-purple-500"
+              >
+                <div className="w-16 h-16 rounded-full flex items-center justify-center text-slate-400 bg-white/5">
+                  <Plus size={32} />
+                </div>
+                <span className="font-semibold text-slate-300">직접 추가</span>
+              </button>
+
+              {filteredTemplates
+                .filter((t) => t.category === "Custom")
+                .map((template) => (
+                  <div key={template.id} className="relative group">
+                    <button
+                      onClick={() => setSelectedTemplate(template)}
+                      className="glass-panel w-full h-full p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:scale-105 transition-transform"
+                    >
+                      <div
+                        className={`w-16 h-16 rounded-2xl bg-linear-to-br ${template.color} flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden`}
+                      >
+                        {(() => {
+                          const iconVal = template.icon || getLogoIcon(template.name) || template.name.charAt(0);
+                          return isImageUrl(iconVal) ? (
+                            <img src={iconVal} alt={template.name} className="w-full h-full object-cover" />
+                          ) : (
+                            iconVal
+                          );
+                        })()}
+                      </div>
+                      <span className="font-semibold">{template.name}</span>
+                    </button>
+                    <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={(e) => openEditCustom(e, template)}
+                        className="p-2 bg-slate-800/80 hover:bg-slate-700 rounded-full text-slate-300 transition"
+                        title="Edit Custom Service"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
           </div>
         </div>
       ) : isCustom ? (
         <div className="glass-panel p-8 rounded-3xl space-y-6">
           <div className="flex items-center gap-4 mb-8 relative">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden">
+            <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden">
               {customIcon ? (
                 <img src={customIcon} alt="Custom Icon" className="w-full h-full object-cover" />
               ) : "C"}
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold">{editingTemplateId ? "Edit Custom Service" : "New Custom Service"}</h2>
-              <p className="text-slate-400">{editingTemplateId ? "Update your custom service details" : "Add a custom service to your templates"}</p>
+              <h2 className="text-2xl font-bold">{editingTemplateId ? "커스텀 서비스 수정" : "새 커스텀 서비스 추가"}</h2>
+              <p className="text-slate-400">{editingTemplateId ? "나만의 서비스 상세 정보를 수정해 보세요." : "새로운 서비스를 내 템플릿에 추가합니다."}</p>
             </div>
             
             {editingTemplateId && (
@@ -217,7 +256,7 @@ export default function AddSubscription() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-2">
-                Icon (Image File)
+                아이콘 이미지 (선택)
               </label>
               <input
                 type="file"
@@ -235,19 +274,19 @@ export default function AddSubscription() {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-2">
-                Service Name
+                서비스 이름
               </label>
               <input
                 type="text"
                 value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                placeholder="e.g. Gym Membership"
+                placeholder="예: 헬스장 회원권"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-400 mb-2">
-                Manage URL (Optional)
+                해지/관리 페이지 주소 (선택)
               </label>
               <input
                 type="url"
@@ -264,15 +303,15 @@ export default function AddSubscription() {
               onClick={closeCustomForm}
               className="flex-1 py-3 rounded-xl font-medium bg-slate-800 text-white hover:bg-slate-700 transition"
             >
-              Cancel
+              취소
             </button>
             <button
               onClick={handleAddCustomService}
               disabled={!customName.trim()}
-              className="flex-1 py-3 rounded-xl font-medium bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-3 rounded-xl font-medium bg-linear-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {editingTemplateId ? <CircleCheck size={20} /> : <Plus size={20} />}
-              {editingTemplateId ? "Save Changes" : "Add Service"}
+              {editingTemplateId ? "저장하기" : "추가하기"}
             </button>
           </div>
         </div>
@@ -280,13 +319,16 @@ export default function AddSubscription() {
         <div className="glass-panel p-8 rounded-3xl space-y-6">
           <div className="flex items-center gap-4 mb-8">
             <div
-              className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${selectedTemplate.color} flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden`}
+              className={`w-16 h-16 rounded-2xl bg-linear-to-br ${selectedTemplate.color} flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden`}
             >
-              {(selectedTemplate.icon || "").startsWith("data:image") ? (
-                <img src={selectedTemplate.icon} alt={selectedTemplate.name} className="w-full h-full object-cover" />
-              ) : (
-                selectedTemplate.icon || selectedTemplate.name.charAt(0)
-              )}
+              {(() => {
+                const iconVal = selectedTemplate.icon || getLogoIcon(selectedTemplate.name) || selectedTemplate.name.charAt(0);
+                return isImageUrl(iconVal) ? (
+                  <img src={iconVal} alt={selectedTemplate.name} className="w-full h-full object-cover" />
+                ) : (
+                  iconVal
+                );
+              })()}
             </div>
             <div>
               <h2 className="text-2xl font-bold">
@@ -299,9 +341,9 @@ export default function AddSubscription() {
           </div>
 
           <div className="space-y-4">
-            <div>
+             <div>
               <label className="block text-sm font-medium text-slate-400 mb-2">
-                Monthly Price (₩)
+                월 구독료 (₩)
               </label>
               <div className="flex items-center gap-2">
                 <button
@@ -335,9 +377,9 @@ export default function AddSubscription() {
                 </button>
               </div>
             </div>
-            <div>
+             <div>
               <label className="block text-sm font-medium text-slate-400 mb-2">
-                Categories (Hashtags)
+                카테고리 (해시태그)
               </label>
               <div className="flex flex-wrap gap-2 items-center">
                 <button
@@ -369,9 +411,9 @@ export default function AddSubscription() {
               </div>
             </div>
 
-            <div>
+             <div>
               <label className="block text-sm font-medium text-slate-400 mb-2">
-                Billing Cycle
+                결제 주기
               </label>
               <div className="flex gap-2">
                 {[1, 3, 6, 12].map(months => (
@@ -381,14 +423,14 @@ export default function AddSubscription() {
                     onClick={() => setBillingCycle(months)}
                     className={`flex-1 py-2 rounded-xl text-sm font-medium transition ${billingCycle === months ? 'bg-indigo-500 text-white' : 'bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10'}`}
                   >
-                    {months} {months === 1 ? 'Month' : 'Months'}
+                    {months} {months === 1 ? '개월' : '개월'}
                   </button>
                 ))}
               </div>
             </div>
-            <div>
+             <div>
               <label className="block text-sm font-medium text-slate-400 mb-2">
-                Subscription Start Date
+                구독 시작일
               </label>
               <input
                 type="date"
@@ -397,20 +439,20 @@ export default function AddSubscription() {
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 [color-scheme:dark]"
               />
             </div>
-            <div>
+             <div>
               <label className="block text-sm font-medium text-slate-400 mb-2">
-                Memo / Notes (Optional)
+                메모 / 노트 (선택)
               </label>
               <textarea
                 value={memo}
                 onChange={(e) => setMemo(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[100px] resize-y"
-                placeholder="e.g. Shared with family, Cancel before trial ends..."
+                placeholder="예: 가족들과 공유 중, 무료 체험 종료 전 해지 필요 등..."
               ></textarea>
             </div>
           </div>
 
-          <div className="flex gap-4 pt-4">
+           <div className="flex gap-4 pt-4">
             <button
               onClick={() => {
                 setSelectedTemplate(null);
@@ -421,14 +463,14 @@ export default function AddSubscription() {
               }}
               className="flex-1 py-3 rounded-xl font-medium bg-slate-800 text-white hover:bg-slate-700 transition"
             >
-              Back
+              이전
             </button>
             <button
               onClick={handleSaveSubscription}
-              className="flex-1 py-3 rounded-xl font-medium bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500 transition flex items-center justify-center gap-2"
+              className="flex-1 py-3 rounded-xl font-medium bg-linear-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500 transition flex items-center justify-center gap-2"
             >
               <CircleCheck size={20} />
-              Save Subscription
+              구독 저장하기
             </button>
           </div>
         </div>

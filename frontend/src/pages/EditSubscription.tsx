@@ -3,6 +3,7 @@ import { Plus, Minus, CircleCheck, ArrowLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSubscriptions } from "../context/SubscriptionContext";
 import CategoryManageModal from "../components/CategoryManageModal";
+import { getLogoGradient, getLogoIcon, isImageUrl } from "../utils/logo";
 
 export default function EditSubscription() {
   const { id } = useParams();
@@ -64,19 +65,22 @@ export default function EditSubscription() {
           <ArrowLeft size={20} />
         </button>
         <div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">Edit Subscription</h1>
-          <p className="text-slate-400">Update your subscription details.</p>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">구독 수정</h1>
+          <p className="text-slate-400">구독 상세 정보를 수정해 보세요.</p>
         </div>
       </header>
 
       <div className="glass-panel p-8 rounded-3xl space-y-6">
           <div className="flex items-center gap-4 mb-8">
-            <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${subscription.template?.color || 'from-slate-600 to-slate-800'} flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden`}>
-              {(subscription.icon || subscription.template?.icon || "").startsWith("data:image") ? (
-                <img src={subscription.icon || subscription.template?.icon} alt={subscription.name} className="w-full h-full object-cover" />
-              ) : (
-                subscription.icon || subscription.template?.icon || subscription.name?.charAt(0) || "C"
-              )}
+            <div className={`w-16 h-16 rounded-2xl bg-linear-to-br ${getLogoGradient(subscription.name || subscription.template?.templateName || "C")} flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden`}>
+              {(() => {
+                const iconVal = subscription.icon || subscription.template?.icon || getLogoIcon(subscription.name || subscription.template?.templateName || "C") || (subscription.name || "C").charAt(0);
+                return isImageUrl(iconVal) ? (
+                  <img src={iconVal} alt={subscription.name} className="w-full h-full object-cover" />
+                ) : (
+                  iconVal
+                );
+              })()}
             </div>
             <div>
               <h2 className="text-2xl font-bold">{subscription.name || subscription.template?.templateName}</h2>
@@ -86,7 +90,7 @@ export default function EditSubscription() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2">Monthly Price (₩)</label>
+              <label className="block text-sm font-medium text-slate-400 mb-2">월 구독료 (₩)</label>
               <div className="flex items-center gap-2">
                 <button type="button" onClick={() => setPrice((p) => Math.max(0, p - 1000))} className="bg-white/5 border border-white/10 hover:bg-white/10 p-3 rounded-xl transition text-slate-300">
                   <Minus size={20} />
@@ -111,7 +115,7 @@ export default function EditSubscription() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2">Categories (Hashtags)</label>
+              <label className="block text-sm font-medium text-slate-400 mb-2">카테고리 (해시태그)</label>
               <div className="flex flex-wrap gap-2 items-center">
                 <button type="button" onClick={() => setIsCategoryModalOpen(true)} className="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 border border-white/10 hover:bg-white/10 hover:border-purple-500 transition text-slate-300">
                   <Plus size={16} />
@@ -136,7 +140,7 @@ export default function EditSubscription() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2">Billing Cycle</label>
+              <label className="block text-sm font-medium text-slate-400 mb-2">결제 주기</label>
               <div className="flex gap-2">
                 {[1, 3, 6, 12].map(months => (
                   <button
@@ -145,30 +149,30 @@ export default function EditSubscription() {
                     onClick={() => setBillingCycle(months)}
                     className={`flex-1 py-2 rounded-xl text-sm font-medium transition ${billingCycle === months ? 'bg-indigo-500 text-white' : 'bg-white/5 text-slate-400 border border-white/10 hover:bg-white/10'}`}
                   >
-                    {months} {months === 1 ? 'Month' : 'Months'}
+                    {months} 개월
                   </button>
                 ))}
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2">Memo / Notes (Optional)</label>
+              <label className="block text-sm font-medium text-slate-400 mb-2">메모 / 노트 (선택)</label>
               <textarea
                 value={memo}
                 onChange={(e) => setMemo(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 min-h-[100px] resize-y"
-                placeholder="e.g. Shared with family, Cancel before trial ends..."
+                placeholder="예: 가족들과 공유 중, 무료 체험 종료 전 해지 필요 등..."
               ></textarea>
             </div>
           </div>
 
           <div className="flex gap-4 pt-4">
             <button onClick={() => navigate(-1)} className="flex-1 py-3 rounded-xl font-medium bg-slate-800 text-white hover:bg-slate-700 transition">
-              Cancel
+              취소
             </button>
-            <button onClick={handleSaveSubscription} className="flex-1 py-3 rounded-xl font-medium bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500 transition flex items-center justify-center gap-2">
+            <button onClick={handleSaveSubscription} className="flex-1 py-3 rounded-xl font-medium bg-linear-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-500 hover:to-indigo-500 transition flex items-center justify-center gap-2">
               <CircleCheck size={20} />
-              Save Changes
+              저장하기
             </button>
           </div>
       </div>

@@ -6,11 +6,11 @@ export default function Login() {
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/30 blur-[120px] rounded-full mix-blend-screen animate-pulse duration-1000" style={{ animationDelay: '1s' }}></div>
 
       <div className="glass-panel p-10 md:p-14 rounded-[2rem] w-full max-w-md z-10 relative shadow-2xl flex flex-col items-center animate-in slide-in-from-bottom-8 fade-in duration-700">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-500 to-blue-500 flex items-center justify-center font-bold text-white shadow-lg text-2xl mb-6 shadow-purple-500/50">
+        <div className="w-16 h-16 rounded-2xl bg-linear-to-tr from-purple-500 to-blue-500 flex items-center justify-center font-bold text-white shadow-lg text-2xl mb-6 shadow-purple-500/50">
           S
         </div>
         
-        <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 mb-2">
+        <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-white to-slate-400 mb-2">
           Welcome to SMA
         </h1>
         <p className="text-slate-400 text-center mb-10">
@@ -21,7 +21,7 @@ export default function Login() {
           onClick={() => window.location.href = "http://localhost:8080/oauth2/authorization/google"}
           className="w-full relative group"
         >
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl blur opacity-30 group-hover:opacity-70 transition duration-500"></div>
+          <div className="absolute -inset-0.5 bg-linear-to-r from-purple-500 to-blue-500 rounded-xl blur opacity-30 group-hover:opacity-70 transition duration-500"></div>
           <div className="relative flex items-center justify-center gap-3 bg-white text-slate-900 px-6 py-4 rounded-xl font-bold text-lg hover:bg-slate-50 transition-colors">
             <svg viewBox="0 0 24 24" className="w-5 h-5">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

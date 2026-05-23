@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+@font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-display: swap;
+}
+
+@theme {
+  --font-sans: 'Paperozi', sans-serif;
+}
+
 @layer base {
   body {
     @apply bg-slate-900 text-slate-100 min-h-screen font-sans;

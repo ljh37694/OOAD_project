@@ -21,9 +21,9 @@ export default function Dashboard() {
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
       <header className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">Dashboard</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-2">대시보드</h1>
         <p className="text-slate-400">
-          Welcome back! Here's your subscription overview.
+          돌아오신 것을 환영합니다! 구독 서비스 지출 현황을 확인하세요.
         </p>
       </header>
 
@@ -35,16 +35,16 @@ export default function Dashboard() {
         >
           <div className="absolute -right-20 -top-20 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl group-hover:bg-purple-500/30 transition-all duration-700"></div>
           <p className="text-slate-400 font-medium mb-1">
-            Total Monthly Spending
+            월 총 지출액
           </p>
-          <h2 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 tracking-tight">
+          <h2 className="text-5xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-white to-slate-400 tracking-tight">
             ₩{totalMonthly.toLocaleString()}
           </h2>
           <div className="mt-8 flex items-center gap-2 text-sm text-emerald-400">
             <span className="bg-emerald-400/10 px-2 py-1 rounded-md">
               -2.4%
             </span>
-            <span className="text-slate-400">vs last month</span>
+            <span className="text-slate-400">지난달 대비</span>
           </div>
         </div>
 
@@ -54,13 +54,13 @@ export default function Dashboard() {
             <RefreshCw className="text-blue-400" size={24} />
           </div>
           <h3 className="text-2xl font-bold">{activeSubscriptions.length}</h3>
-          <p className="text-slate-400 text-sm">Active Subscriptions</p>
+          <p className="text-slate-400 text-sm">활성 구독 수</p>
         </div>
       </div>
 
       <div>
         <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          Upcoming Payments
+          결제 예정 구독
         </h3>
         <div className="flex flex-col gap-4">
           {subscriptions
