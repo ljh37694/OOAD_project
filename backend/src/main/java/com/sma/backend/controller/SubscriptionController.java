@@ -91,6 +91,9 @@ public class SubscriptionController {
             if (subscription.getUserEmail() != null && !subscription.getUserEmail().equals(email)) {
                 throw new RuntimeException("Unauthorized");
             }
+            String oldStatus = subscription.getStatus();
+            String oldNextDate = subscription.getNextPaymentDate();
+            
             if (updatedSub.getName() != null) subscription.setName(updatedSub.getName());
             if (updatedSub.getIcon() != null) subscription.setIcon(updatedSub.getIcon());
             if (updatedSub.getCategory() != null) subscription.setCategory(updatedSub.getCategory());
@@ -100,6 +103,36 @@ public class SubscriptionController {
             if (updatedSub.getMemo() != null) subscription.setMemo(updatedSub.getMemo());
             if (updatedSub.getSelectedPrice() != null) subscription.setSelectedPrice(updatedSub.getSelectedPrice());
             if (updatedSub.getNextPaymentDate() != null) subscription.setNextPaymentDate(updatedSub.getNextPaymentDate());
+            
+            String newStatus = subscription.getStatus();
+            String newNextDate = subscription.getNextPaymentDate();
+            
+            if ("Paused".equals(newStatus) && !"Paused".equals(oldStatus)) {
+                List<PaymentHistory> scheduled = paymentHistoryRepository.findByUserEmailAndSubscriptionId(email, subscription.getId())
+                        .stream().filter(p -> "SCHEDULED".equals(p.getStatus())).toList();
+                paymentHistoryRepository.deleteAll(scheduled);
+            } else if ("Active".equals(newStatus)) {
+                if (!"Active".equals(oldStatus) || (newNextDate != null && !newNextDate.equals(oldNextDate))) {
+                    List<PaymentHistory> scheduled = paymentHistoryRepository.findByUserEmailAndSubscriptionId(email, subscription.getId())
+                            .stream().filter(p -> "SCHEDULED".equals(p.getStatus())).toList();
+                    paymentHistoryRepository.deleteAll(scheduled);
+                    
+                    try {
+                        LocalDate nextDate = ZonedDateTime.parse(newNextDate).toLocalDate();
+                        PaymentHistory newScheduled = PaymentHistory.builder()
+                                .userEmail(email)
+                                .subscriptionId(subscription.getId())
+                                .subscriptionName(subscription.getName())
+                                .price(subscription.getSelectedPrice())
+                                .icon(subscription.getIcon())
+                                .color("from-slate-600 to-slate-800")
+                                .paymentDate(nextDate)
+                                .status("SCHEDULED")
+                                .build();
+                        paymentHistoryRepository.save(newScheduled);
+                    } catch (Exception e) {}
+                }
+            }
             
             return repository.save(subscription);
         }).orElseThrow(() -> new RuntimeException("Subscription not found"));

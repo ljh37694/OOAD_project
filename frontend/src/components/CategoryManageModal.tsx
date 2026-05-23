@@ -39,7 +39,7 @@ export default function CategoryManageModal({ isOpen, onClose }: Props) {
           <h2 className="text-2xl font-bold">Manage Hashtags</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition bg-white/5 hover:bg-white/10 p-2 rounded-full"
+            className="text-slate-400 hover:text-white transition bg-white/5 hover:bg-white/10 w-9 h-9 flex items-center justify-center rounded-full"
           >
             <X size={20} />
           </button>

@@ -49,7 +49,7 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
             setShowActivateForm(false);
             onClose();
           }}
-          className="absolute top-6 right-6 text-slate-400 hover:text-white transition bg-white/5 hover:bg-white/10 p-2 rounded-full z-10"
+          className="absolute top-6 right-6 text-slate-400 hover:text-white transition bg-white/5 hover:bg-white/10 w-9 h-9 flex items-center justify-center rounded-full z-10"
         >
           <X size={20} />
         </button>
@@ -70,7 +70,9 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
               </button>
               <button 
                 onClick={() => {
-                  updateSubscription(currentSub.id, { status: "Paused" });
+                  if (currentSub.id) {
+                    updateSubscription(currentSub.id, { status: "Paused" });
+                  }
                   setShowPauseConfirm(false);
                 }}
                 className="flex-1 py-3 rounded-xl font-medium bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition"
@@ -92,6 +94,7 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
                 </label>
                 <input
                   type="date"
+                  min={new Date().toISOString().split('T')[0]}
                   value={activateStartDate}
                   onChange={(e) => setActivateStartDate(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 [color-scheme:dark]"
@@ -127,13 +130,15 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
               </button>
               <button 
                 onClick={() => {
-                  const d = new Date(activateStartDate);
-                  d.setMonth(d.getMonth() + activateCycle);
-                  updateSubscription(currentSub.id, { 
-                    status: "Active",
-                    cycle: `${activateCycle} Month${activateCycle > 1 ? 's' : ''}`,
-                    nextPaymentDate: d.toISOString()
-                  });
+                  if (currentSub.id) {
+                    const d = new Date(activateStartDate);
+                    d.setMonth(d.getMonth() + activateCycle);
+                    updateSubscription(currentSub.id, { 
+                      status: "Active",
+                      cycle: `${activateCycle} Month${activateCycle > 1 ? 's' : ''}`,
+                      nextPaymentDate: d.toISOString()
+                    });
+                  }
                   setShowActivateForm(false);
                 }}
                 className="flex-1 py-3 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-400 transition shadow-[0_0_15px_rgba(16,185,129,0.3)]"

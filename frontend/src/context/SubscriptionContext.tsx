@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   useContext,
   useState,
@@ -151,7 +151,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     const loadData = async () => {
       // If not logged in, we could clear data or keep dummy data.
       if (!user) {
-        setSubscriptions(initialSubscriptions);
+        setSubscriptions([]);
         setTemplates(initialTemplates);
         return;
       }

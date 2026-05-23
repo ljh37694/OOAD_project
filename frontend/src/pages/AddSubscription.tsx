@@ -6,7 +6,7 @@ import CategoryManageModal from "../components/CategoryManageModal";
 
 export default function AddSubscription() {
   const navigate = useNavigate();
-  const { subscriptions, addSubscription, templates, addTemplate, editTemplate, deleteTemplate, availableCategories } = useSubscriptions();
+  const { addSubscription, templates, addTemplate, editTemplate, deleteTemplate, availableCategories } = useSubscriptions();
   
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
@@ -114,10 +114,7 @@ export default function AddSubscription() {
     setCustomUrl(template.pageUrl || "");
   };
 
-  const handleDeleteCustom = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    deleteTemplate(id);
-  };
+
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-2xl mx-auto">

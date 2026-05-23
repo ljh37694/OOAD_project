@@ -122,7 +122,7 @@ export default function CalendarView() {
   const monthTotal = monthPayments.reduce((acc, curr) => acc + curr.price, 0);
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-3xl mx-auto pb-20">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-xl mx-auto pb-20">
       <header className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-4xl md:text-5xl font-extrabold mb-1 flex items-center gap-3">
@@ -168,7 +168,6 @@ export default function CalendarView() {
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1;
               const dayPayments = getPaymentsForDate(day);
-              const dayTotal = dayPayments.reduce((acc, curr) => acc + curr.price, 0);
               const isToday = day === new Date().getDate() && 
                               currentDate.getMonth() === new Date().getMonth() && 
                               currentDate.getFullYear() === new Date().getFullYear();

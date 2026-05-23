@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useAuth } from '../context/AuthContext';
 import { User as UserIcon, Calendar, Mail, Clock } from 'lucide-react';
 
