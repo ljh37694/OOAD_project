@@ -16,6 +16,7 @@ public class Subscription {
     private String userEmail;
 
     private String name;
+    @Column(columnDefinition = "LONGTEXT")
     private String icon;
     private String category;
 
@@ -30,5 +31,6 @@ public class Subscription {
 
     private Integer selectedPrice;
     private String nextPaymentDate;
+    private String startDate;
 
 }

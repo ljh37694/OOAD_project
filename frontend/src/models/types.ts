@@ -20,6 +20,7 @@ export interface Subscription {
   memo?: string;
   selectedPrice: number;
   nextPaymentDate: string; // ISO date string
+  startDate?: string;
 }
 
 export interface User {

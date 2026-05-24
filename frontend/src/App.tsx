@@ -14,6 +14,8 @@ export default function App() {
   const navigate = useNavigate();
   const isLoginPage = location.pathname === "/login";
 
+  const isDashboard = location.pathname === "/";
+
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const token = params.get("token");
@@ -26,13 +28,13 @@ export default function App() {
   }, [location, navigate]);
 
   return (
-    <div className="flex bg-slate-900 text-slate-100 min-h-screen">
+    <div className={`flex bg-slate-900 text-slate-100 ${isDashboard ? "h-screen overflow-hidden" : "min-h-screen"}`}>
       {!isLoginPage && <Navbar />}
 
       <main
-        className={`flex-1 transition-all duration-300 ${!isLoginPage ? "md:ml-64 p-6 md:p-10 pb-24 md:pb-10" : ""}`}
+        className={`flex-1 transition-all duration-300 ${!isLoginPage ? "md:ml-64 p-6 md:p-10 pb-24 md:pb-10" : ""} ${isDashboard ? "h-screen flex flex-col overflow-hidden" : ""}`}
       >
-        <div className="max-w-6xl mx-auto w-full">
+        <div className={`max-w-6xl mx-auto w-full ${isDashboard ? "h-full flex flex-col overflow-hidden" : ""}`}>
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/login" element={<Login />} />

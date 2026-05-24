@@ -28,6 +28,7 @@ interface SubscriptionContextType {
   addTemplate: (template: ServiceTemplate) => void;
   editTemplate: (id: string, updated: Partial<ServiceTemplate>) => void;
   deleteTemplate: (id: string) => void;
+  deleteSubscriptions: (ids: (string | number)[]) => Promise<void>;
   availableCategories: string[];
   addCategory: (cat: string) => void;
   editCategory: (oldCat: string, newCat: string) => void;
@@ -38,104 +39,12 @@ const SubscriptionContext = createContext<SubscriptionContextType | undefined>(
   undefined,
 );
 
-// Initial Dummy Data to keep Dashboard and List looking good initially
-const initialSubscriptions: Subscription[] = [
-  {
-    id: "1",
-    template: {
-      templateName: "Netflix",
-      price: 17000,
-      category: "Entertainment",
-      pageUrl: "https://netflix.com/cancel",
-      calender: "Monthly",
-    },
-    name: "Netflix",
-    category: "Entertainment",
-    cycle: "Monthly",
-    status: "Active",
-    selectedPrice: 17000,
-    nextPaymentDate: "2026-04-18T00:00:00.000Z",
-  },
-  {
-    id: "2",
-    template: {
-      templateName: "Spotify",
-      price: 10900,
-      category: "Music",
-      pageUrl: "https://spotify.com/cancel",
-      calender: "Monthly",
-    },
-    name: "Spotify",
-    category: "Music",
-    cycle: "Monthly",
-    status: "Active",
-    selectedPrice: 10900,
-    nextPaymentDate: "2026-04-22T00:00:00.000Z",
-  },
-  {
-    id: "3",
-    template: {
-      templateName: "YouTube Premium",
-      price: 14900,
-      category: "Entertainment",
-      pageUrl: "https://youtube.com/cancel",
-      calender: "Monthly",
-    },
-    name: "YouTube Premium",
-    category: "Entertainment",
-    cycle: "Monthly",
-    status: "Active",
-    selectedPrice: 14900,
-    nextPaymentDate: "2026-05-02T00:00:00.000Z",
-  },
-  {
-    id: "4",
-    name: "Adobe Creative Cloud",
-    category: "Productivity",
-    cycle: "Yearly",
-    status: "Paused",
-    selectedPrice: 62000,
-    nextPaymentDate: "2027-01-01T00:00:00.000Z",
-  },
-];
+import defaultTemplates from "../assets/templates.json";
 
-const initialTemplates: ServiceTemplate[] = [
-  {
-    id: "1",
-    name: "Netflix",
-    category: "Entertainment",
-    price: 17000,
-    color: "from-red-600 to-red-900",
-  },
-  {
-    id: "2",
-    name: "Spotify",
-    category: "Music",
-    price: 10900,
-    color: "from-green-500 to-emerald-700",
-  },
-  {
-    id: "3",
-    name: "YouTube Premium",
-    category: "Entertainment",
-    price: 14900,
-    color: "from-red-500 to-rose-600",
-  },
-  {
-    id: "4",
-    name: "Apple Music",
-    category: "Music",
-    price: 8900,
-    color: "from-slate-700 to-slate-900",
-  },
-  {
-    id: "5",
-    name: "Adobe Creative Cloud",
-    category: "Productivity",
-    price: 62000,
-    color: "from-red-500 to-orange-500",
-  },
-];
+// Initial Dummy Data to keep Dashboard and List looking good initially
+const initialSubscriptions: Subscription[] = [];
+
+const initialTemplates: ServiceTemplate[] = defaultTemplates as ServiceTemplate[];
 
 export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const [subscriptions, setSubscriptions] =
@@ -259,6 +168,19 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const deleteSubscriptions = async (ids: (string | number)[]) => {
+    setSubscriptions((prev) => prev.filter((sub) => !ids.includes(sub.id)));
+    if (!user) return;
+    try {
+      await fetchApi('/api/subscriptions/batch', {
+        method: 'DELETE',
+        body: JSON.stringify(ids.map(Number))
+      });
+    } catch (err) {
+      console.error("Error deleting subscriptions", err);
+    }
+  };
+
   const addCategory = (cat: string) => {
     if (!availableCategories.includes(cat)) {
       setAvailableCategories(prev => [...prev, cat]);
@@ -277,7 +199,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   return (
     <SubscriptionContext.Provider
       value={{ 
-        subscriptions, addSubscription, updateSubscription,
+        subscriptions, addSubscription, updateSubscription, deleteSubscriptions,
         templates, addTemplate, editTemplate, deleteTemplate,
         availableCategories, addCategory, editCategory, deleteCategory
       }}

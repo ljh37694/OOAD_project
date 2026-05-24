@@ -10,6 +10,30 @@ interface Props {
   onClose: () => void;
 }
 
+const getMonthsElapsed = (startDateStr?: string) => {
+  if (!startDateStr) return "-";
+  const start = new Date(startDateStr);
+  start.setHours(0, 0, 0, 0);
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  if (today < start) {
+    return "시작 예정";
+  }
+  
+  let yearsDiff = today.getFullYear() - start.getFullYear();
+  let monthsDiff = today.getMonth() - start.getMonth();
+  let totalMonths = yearsDiff * 12 + monthsDiff;
+  
+  if (today.getDate() < start.getDate()) {
+    totalMonths -= 1;
+  }
+  
+  const months = Math.max(0, totalMonths) + 1;
+  return `${months}개월`;
+};
+
 export default function SubscriptionDetailModal({ subscription, onClose }: Props) {
   const { subscriptions, updateSubscription } = useSubscriptions();
   const navigate = useNavigate();
@@ -176,6 +200,16 @@ export default function SubscriptionDetailModal({ subscription, onClose }: Props
             <div className="bg-white/5 rounded-2xl p-4 flex flex-col justify-center">
               <p className="text-slate-400 text-sm font-medium mb-1">다음 결제일</p>
               <p className="font-semibold">{new Date(currentSub.nextPaymentDate).toLocaleDateString()}</p>
+            </div>
+            <div className="bg-white/5 rounded-2xl p-4 flex flex-col justify-center">
+              <p className="text-slate-400 text-sm font-medium mb-1">이용 기간</p>
+              <p className="font-semibold">{getMonthsElapsed(currentSub.startDate)}</p>
+            </div>
+            <div className="bg-white/5 rounded-2xl p-4 flex flex-col justify-center">
+              <p className="text-slate-400 text-sm font-medium mb-1">구독 시작일</p>
+              <p className="font-semibold">
+                {currentSub.startDate ? new Date(currentSub.startDate).toLocaleDateString() : "-"}
+              </p>
             </div>
             <div className="bg-white/5 rounded-2xl p-4 flex justify-between items-center">
               <div>

@@ -44,6 +44,16 @@ export default function AddSubscription() {
     }
   }, [selectedTemplate]);
 
+  const calculateNextPaymentDate = (start: string, cycleMonths: number): string => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const current = new Date(start);
+    while (current <= today) {
+      current.setMonth(current.getMonth() + cycleMonths);
+    }
+    return current.toISOString();
+  };
+
   const handleSaveSubscription = () => {
     if (!selectedTemplate) return;
     
@@ -62,11 +72,8 @@ export default function AddSubscription() {
       categories: selectedCategories,
       cycle: `${billingCycle} Month${billingCycle > 1 ? 's' : ''}`,
       selectedPrice: price,
-      nextPaymentDate: (() => {
-        const d = new Date(startDate);
-        d.setMonth(d.getMonth() + billingCycle);
-        return d.toISOString();
-      })(),
+      nextPaymentDate: calculateNextPaymentDate(startDate, billingCycle),
+      startDate,
       memo,
       status: "Active"
     });
@@ -145,35 +152,37 @@ export default function AddSubscription() {
           </div>
 
           {/* 인기 구독 서비스 섹션 */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold text-slate-200">인기 구독 서비스</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {filteredTemplates
-                .filter((t) => t.category !== "Custom")
-                .map((template) => (
-                  <div key={template.id} className="relative group">
-                    <button
-                      onClick={() => setSelectedTemplate(template)}
-                      className="glass-panel w-full h-full p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:scale-105 transition-transform"
-                    >
-                      <div
-                        className={`w-16 h-16 rounded-2xl bg-linear-to-br ${template.color} flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden`}
+          {filteredTemplates.filter((t) => t.category !== "Custom").length > 0 && (
+            <div className="space-y-4">
+              <h2 className="text-xl font-bold text-slate-200">인기 구독 서비스</h2>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {filteredTemplates
+                  .filter((t) => t.category !== "Custom")
+                  .map((template) => (
+                    <div key={template.id} className="relative group">
+                      <button
+                        onClick={() => setSelectedTemplate(template)}
+                        className="glass-panel w-full h-full p-6 rounded-2xl flex flex-col items-center justify-center gap-4 hover:scale-105 transition-transform"
                       >
-                        {(() => {
-                          const iconVal = template.icon || getLogoIcon(template.name) || template.name.charAt(0);
-                          return isImageUrl(iconVal) ? (
-                            <img src={iconVal} alt={template.name} className="w-full h-full object-cover" />
-                          ) : (
-                            iconVal
-                          );
-                        })()}
-                      </div>
-                      <span className="font-semibold">{template.name}</span>
-                    </button>
-                  </div>
-                ))}
+                        <div
+                          className={`w-16 h-16 rounded-2xl bg-linear-to-br ${template.color} flex items-center justify-center text-white font-bold text-2xl shadow-lg overflow-hidden`}
+                        >
+                          {(() => {
+                            const iconVal = template.icon || getLogoIcon(template.name) || template.name.charAt(0);
+                            return isImageUrl(iconVal) ? (
+                              <img src={iconVal} alt={template.name} className="w-full h-full object-cover" />
+                            ) : (
+                              iconVal
+                            );
+                          })()}
+                        </div>
+                        <span className="font-semibold">{template.name}</span>
+                      </button>
+                    </div>
+                  ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* 나만의 서비스 섹션 */}
           <div className="space-y-4 mt-8">

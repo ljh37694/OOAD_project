@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
     List<Subscription> findByUserEmail(String userEmail);
+    List<Subscription> findByStatus(String status);
     List<Subscription> findByStatusAndNextPaymentDateStartingWith(String status, String datePrefix);
 }

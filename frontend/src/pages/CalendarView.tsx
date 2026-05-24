@@ -9,9 +9,8 @@ interface PaymentHistory {
   subscriptionName: string;
   price: number;
   icon: string;
-  color: string;
   paymentDate: string;
-  status: string;
+  status?: string;
 }
 
 export default function CalendarView() {
@@ -80,7 +79,6 @@ export default function CalendarView() {
           subscriptionName: sub.name || "Custom Subscription",
           price: sub.selectedPrice,
           icon: sub.icon || sub.name?.charAt(0) || "C",
-          color: 'from-slate-600 to-slate-800',
           paymentDate: `${currY}-${String(currM + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
           status: 'SCHEDULED'
         });
@@ -96,11 +94,7 @@ export default function CalendarView() {
   });
 
   // Combine DB payments and virtual payments, deduplicating
-  const activeDbPayments = dbPayments.filter(dp => {
-    if (dp.status !== "SCHEDULED") return true; // Keep past paid payments
-    const sub = subscriptions.find(s => s.name === dp.subscriptionName);
-    return sub ? sub.status === "Active" : true;
-  });
+  const activeDbPayments = dbPayments;
 
   const payments = [...activeDbPayments];
   virtualPayments.forEach(vp => {
@@ -151,11 +145,16 @@ export default function CalendarView() {
         </div>
 
         <div className="grid grid-cols-7 gap-1.5 mb-2">
-          {days.map(day => (
-            <div key={day} className="text-center text-xs font-semibold text-slate-400 py-1">
-              {day}
-            </div>
-          ))}
+          {days.map((day, idx) => {
+            let colorClass = "text-slate-400";
+            if (idx === 0) colorClass = "text-red-500";
+            else if (idx === 6) colorClass = "text-blue-400";
+            return (
+              <div key={day} className={`text-center text-xs font-semibold ${colorClass} py-1`}>
+                {day}
+              </div>
+            );
+          })}
         </div>
 
         {isLoading ? (
@@ -182,23 +181,27 @@ export default function CalendarView() {
                       setSelectedDatePayments({ date: dateStr, payments: dayPayments });
                     }
                   }}
-                  className={`min-h-[50px] md:min-h-[60px] p-1.5 rounded-xl border flex flex-col transition-colors ${
+                  className={`min-h-[50px] md:min-h-[60px] p-1 md:p-1.5 rounded-xl border flex flex-col transition-colors ${
                     isToday ? 'bg-purple-900/20 border-purple-500/50' : 'bg-white/5 border-white/5'
                   } ${dayPayments.length > 0 ? 'cursor-pointer hover:bg-white/10' : ''}`}
                 >
                   <div className="flex justify-between items-start mb-auto">
-                    <span className={`text-xs md:text-sm font-medium ${isToday ? 'text-purple-400 font-bold' : 'text-slate-400'} ${dayPayments.length > 0 ? 'text-slate-200' : ''}`}>
+                    <span className={(() => {
+                      if (isToday) return 'text-purple-400 font-bold';
+                      const dayOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).getDay();
+                      if (dayOfWeek === 0) return 'text-red-500 font-medium';
+                      if (dayOfWeek === 6) return 'text-blue-400 font-medium';
+                      return dayPayments.length > 0 ? 'text-slate-200' : 'text-slate-400';
+                    })()}>
                       {day}
                     </span>
                   </div>
                   
                   {dayPayments.length > 0 && (
-                    <div className="mt-1 flex flex-col gap-0.5">
-                      {dayPayments.map((payment, idx) => (
-                        <div key={`${payment.id}-${idx}`} className="text-[9px] md:text-[10px] font-semibold text-right text-slate-300 truncate" title={payment.subscriptionName}>
-                          ₩{payment.price.toLocaleString()}
-                        </div>
-                      ))}
+                    <div className="mt-auto text-right w-full overflow-visible">
+                      <div className="text-[8px] sm:text-[9px] md:text-xs font-bold text-slate-300 tracking-tighter whitespace-nowrap overflow-visible">
+                        ₩{dayPayments.reduce((acc, p) => acc + p.price, 0).toLocaleString()}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -237,9 +240,9 @@ export default function CalendarView() {
                     </div>
                      <div>
                        <p className="font-semibold text-slate-200">{p.subscriptionName}</p>
-                       <p className={`text-xs font-medium ${p.status === 'PAID' ? 'text-emerald-400' : 'text-slate-400'}`}>
-                         {p.status === 'PAID' ? '결제완료' : '결제예정'}
-                       </p>
+                        <p className={`text-xs font-medium ${p.status === 'SCHEDULED' ? 'text-slate-400' : 'text-emerald-400'}`}>
+                          {p.status === 'SCHEDULED' ? '결제예정' : '결제완료'}
+                        </p>
                      </div>
                   </div>
                   <span className="font-bold text-slate-100">₩{p.price.toLocaleString()}</span>

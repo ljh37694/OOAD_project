@@ -22,11 +22,8 @@ public class PaymentHistory {
     private Long subscriptionId;
     private String subscriptionName;
     private Integer price;
+    @Column(columnDefinition = "LONGTEXT")
     private String icon;
-    private String color;
 
     private LocalDate paymentDate;
-    
-    // e.g. "PAID", "SCHEDULED", "FAILED"
-    private String status;
 }

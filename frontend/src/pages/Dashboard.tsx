@@ -19,15 +19,15 @@ export default function Dashboard() {
   );
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <header className="mb-8">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 h-full flex flex-col overflow-hidden">
+      <header className="mb-6 shrink-0">
         <h1 className="text-3xl md:text-4xl font-bold mb-2">대시보드</h1>
         <p className="text-slate-400">
           돌아오신 것을 환영합니다! 구독 서비스 지출 현황을 확인하세요.
         </p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 shrink-0">
         {/* Total Spending Card */}
         <div 
           onClick={() => navigate('/calendar')}
@@ -37,7 +37,7 @@ export default function Dashboard() {
           <p className="text-slate-400 font-medium mb-1">
             월 총 지출액
           </p>
-          <h2 className="text-5xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-white to-slate-400 tracking-tight">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-white to-slate-400 tracking-tight">
             ₩{totalMonthly.toLocaleString()}
           </h2>
           <div className="mt-8 flex items-center gap-2 text-sm text-emerald-400">
@@ -58,11 +58,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div>
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+      <div className="flex-1 flex flex-col min-h-0">
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-2 shrink-0">
           결제 예정 구독
         </h3>
-        <div className="flex flex-col gap-4">
+        <div className="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 min-h-0">
           {subscriptions
             .sort(
               (a, b) =>
