@@ -25,7 +25,7 @@ public class NotificationsScheduler {
 
     private final SubscriptionRepository subscriptionRepository;
     private final JavaMailSender mailSender;
-    private final PaymentHistoryRepository paymentHistoryRepository;
+    private final PaymentService paymentService;
 
     // 매일 자정에 실행하여 경과한 결제예정일 자동 갱신 및 과거 PAID 이력 자동 기록
     @org.springframework.transaction.annotation.Transactional
@@ -39,49 +39,13 @@ public class NotificationsScheduler {
             if (sub.getNextPaymentDate() == null) continue;
             
             try {
-                LocalDate nextDate;
-                if (sub.getNextPaymentDate().contains("T")) {
-                    nextDate = ZonedDateTime.parse(sub.getNextPaymentDate()).toLocalDate();
-                } else {
-                    nextDate = LocalDate.parse(sub.getNextPaymentDate());
-                }
+                String oldNextDate = sub.getNextPaymentDate();
+                paymentService.updatePassedPayments(sub, today);
                 
-                if (nextDate.isBefore(today)) {
-                    int cycleMonths = 1;
-                    if (sub.getCycle() != null && sub.getCycle().contains("Month")) {
-                        String num = sub.getCycle().replaceAll("[^0-9]", "");
-                        if (!num.isEmpty()) {
-                            cycleMonths = Integer.parseInt(num);
-                        }
-                    } else if (sub.getCycle() != null && sub.getCycle().contains("개월")) {
-                        String num = sub.getCycle().replaceAll("[^0-9]", "");
-                        if (!num.isEmpty()) {
-                            cycleMonths = Integer.parseInt(num);
-                        }
-                    }
-                    
-                    LocalDate current = nextDate;
-                    while (current.isBefore(today)) {
-                        PaymentHistory history = PaymentHistory.builder()
-                                .userEmail(sub.getUserEmail())
-                                .subscriptionId(sub.getId())
-                                .subscriptionName(sub.getName())
-                                .price(sub.getSelectedPrice())
-                                .icon(sub.getIcon())
-                                .paymentDate(current)
-                                .build();
-                        paymentHistoryRepository.save(history);
-                        
-                        current = current.plusMonths(cycleMonths);
-                    }
-                    
-                    // Update nextPaymentDate
-                    ZonedDateTime nextZoned = current.atStartOfDay(java.time.ZoneId.systemDefault());
-                    sub.setNextPaymentDate(nextZoned.toString());
+                if (!oldNextDate.equals(sub.getNextPaymentDate())) {
                     subscriptionRepository.save(sub);
-                    
                     log.info("구독 [{}]의 결제예정일이 경과하여 {} 로 갱신하고 과거 이력을 추가했습니다.",
-                            sub.getName(), current);
+                            sub.getName(), sub.getNextPaymentDate());
                 }
             } catch (Exception e) {
                 log.error("구독 결제예정일 갱신 중 오류 발생 (ID: " + sub.getId() + "): ", e);

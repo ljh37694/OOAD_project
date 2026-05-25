@@ -1,7 +1,7 @@
 package com.sma.backend.controller;
 
 import com.sma.backend.domain.CustomTemplate;
-import com.sma.backend.repository.CustomTemplateRepository;
+import com.sma.backend.service.CustomTemplateService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -13,52 +13,34 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:5173")
 public class CustomTemplateController {
 
-    private final CustomTemplateRepository repository;
+    private final CustomTemplateService customTemplateService;
 
-    public CustomTemplateController(CustomTemplateRepository repository) {
-        this.repository = repository;
+    public CustomTemplateController(CustomTemplateService customTemplateService) {
+        this.customTemplateService = customTemplateService;
     }
 
     @GetMapping
     public List<CustomTemplate> getAll(Authentication authentication) {
         String email = (String) authentication.getPrincipal();
-        return repository.findByUserEmail(email);
+        return customTemplateService.getAllTemplates(email);
     }
 
     @PostMapping
     public CustomTemplate create(@RequestBody CustomTemplate template, Authentication authentication) {
         String email = (String) authentication.getPrincipal();
-        template.setUserEmail(email);
-        return repository.save(template);
+        return customTemplateService.createTemplate(template, email);
     }
 
     @PutMapping("/{id}")
     public CustomTemplate update(@PathVariable Long id, @RequestBody CustomTemplate updatedTemplate, Authentication authentication) {
         String email = (String) authentication.getPrincipal();
-        return repository.findById(id).map(template -> {
-            if (template.getUserEmail() != null && !template.getUserEmail().equals(email)) {
-                throw new RuntimeException("Unauthorized");
-            }
-            if (updatedTemplate.getName() != null) template.setName(updatedTemplate.getName());
-            if (updatedTemplate.getCategory() != null) template.setCategory(updatedTemplate.getCategory());
-            if (updatedTemplate.getPrice() != null) template.setPrice(updatedTemplate.getPrice());
-            if (updatedTemplate.getColor() != null) template.setColor(updatedTemplate.getColor());
-            if (updatedTemplate.getIcon() != null) template.setIcon(updatedTemplate.getIcon());
-            if (updatedTemplate.getPageUrl() != null) template.setPageUrl(updatedTemplate.getPageUrl());
-            
-            return repository.save(template);
-        }).orElseThrow(() -> new RuntimeException("Template not found"));
+        return customTemplateService.updateTemplate(id, updatedTemplate, email);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id, Authentication authentication) {
         String email = (String) authentication.getPrincipal();
-        return repository.findById(id).map(template -> {
-            if (template.getUserEmail() != null && !template.getUserEmail().equals(email)) {
-                throw new RuntimeException("Unauthorized");
-            }
-            repository.delete(template);
-            return ResponseEntity.ok().build();
-        }).orElseThrow(() -> new RuntimeException("Template not found"));
+        customTemplateService.deleteTemplate(id, email);
+        return ResponseEntity.ok().build();
     }
 }

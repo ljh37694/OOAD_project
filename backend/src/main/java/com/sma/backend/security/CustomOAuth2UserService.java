@@ -1,8 +1,7 @@
 package com.sma.backend.security;
 
-import com.sma.backend.domain.Role;
 import com.sma.backend.domain.User;
-import com.sma.backend.repository.UserRepository;
+import com.sma.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -15,13 +14,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
 public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -34,29 +32,12 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         String email = (String) attributes.get("email");
         String picture = (String) attributes.get("picture");
 
-        User user = saveOrUpdate(name, email, picture);
+        User user = userService.saveOrUpdate(name, email, picture);
 
         return new DefaultOAuth2User(
                 Collections.singleton(new SimpleGrantedAuthority(user.getRoleKey())),
                 attributes,
                 "email" // the name attribute key
         );
-    }
-
-    private User saveOrUpdate(String name, String email, String picture) {
-        Optional<User> userOptional = userRepository.findByEmail(email);
-
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            return userRepository.save(user.update(name, picture));
-        } else {
-            User user = User.builder()
-                    .name(name)
-                    .email(email)
-                    .picture(picture)
-                    .role(Role.USER) // Assign default role
-                    .build();
-            return userRepository.save(user);
-        }
     }
 }

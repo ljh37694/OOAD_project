@@ -1,8 +1,7 @@
 package com.sma.backend.controller;
 
-import com.sma.backend.domain.User;
 import com.sma.backend.domain.dto.UserResponse;
-import com.sma.backend.repository.UserRepository;
+import com.sma.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -16,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getCurrentUser() {
@@ -26,8 +25,8 @@ public class UserController {
         }
 
         String email = authentication.getName(); // The subject from the JWT is the email
-        
-        return userRepository.findByEmail(email)
+
+        return userService.getCurrentUser(email)
                 .map(user -> ResponseEntity.ok(new UserResponse(user)))
                 .orElse(ResponseEntity.notFound().build());
     }
